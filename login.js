@@ -1,20 +1,10 @@
 // -----------------------------------------------------------------------
-// login.js — protótipo visual de login + troca obrigatória de senha no
-// primeiro acesso. NÃO é autenticação de verdade: as credenciais abaixo
-// são fictícias e ficam visíveis no código (é um site estático, sem
-// backend/banco de dados nenhum ainda). Quando existir um backend real,
-// troca-se `autenticar()` por uma chamada de API de verdade — o resto do
-// fluxo (telas, validação de senha nova) já fica pronto.
+// login.js — login de verdade contra o backend do FrontCore Servidor
+// (ver assets/js/auth-client.js). Troca de senha obrigatória só no
+// primeiro acesso de cada pessoa (ou depois de um reset feito por quem
+// administra as contas); nos próximos logins é só e-mail + senha.
 // -----------------------------------------------------------------------
-
-const CREDENCIAL_EXEMPLO = {
-  email: "usuario@avancoinfo.com.br",
-  senha: "ExemploSenha123",
-};
-
-function autenticar(email, senha) {
-  return email.trim().toLowerCase() === CREDENCIAL_EXEMPLO.email && senha === CREDENCIAL_EXEMPLO.senha;
-}
+import { login, trocarSenha } from "./assets/js/auth-client.js";
 
 const viewLogin = document.getElementById("view-login");
 const viewNewpass = document.getElementById("view-newpass");
@@ -22,30 +12,63 @@ const viewDone = document.getElementById("view-done");
 
 const formLogin = document.getElementById("form-login");
 const loginError = document.getElementById("login-error");
+const btnLogin = formLogin.querySelector("button[type=submit]");
 
 const formNewpass = document.getElementById("form-newpass");
 const newpassError = document.getElementById("newpass-error");
+const btnNewpass = formNewpass.querySelector("button[type=submit]");
+
+const doneTitulo = document.getElementById("done-titulo");
+const doneMensagem = document.getElementById("done-mensagem");
 
 function showView(view) {
   for (const v of [viewLogin, viewNewpass, viewDone]) v.hidden = v !== view;
 }
 
-formLogin.addEventListener("submit", (e) => {
-  e.preventDefault();
-  const email = document.getElementById("login-email").value;
-  const senha = document.getElementById("login-senha").value;
+/** Mostra a tela final com uma mensagem e manda pro dashboard logo em
+ * seguida — o link "Entrar no FrontCore →" na tela continua funcionando
+ * como alternativa, caso o redirecionamento automático falhe por algum
+ * motivo. */
+function irParaHomeEm(ms, titulo, mensagem) {
+  doneTitulo.textContent = titulo;
+  doneMensagem.textContent = mensagem;
+  showView(viewDone);
+  setTimeout(() => {
+    window.location.href = "home/";
+  }, ms);
+}
 
-  if (!autenticar(email, senha)) {
-    loginError.textContent = "E-mail ou senha incorretos.";
-    loginError.hidden = false;
-    return;
-  }
+let tokenAtual = null;
+
+formLogin.addEventListener("submit", async (e) => {
+  e.preventDefault();
   loginError.hidden = true;
-  showView(viewNewpass);
+  btnLogin.disabled = true;
+  try {
+    const resultado = await login(
+      document.getElementById("login-email").value,
+      document.getElementById("login-senha").value
+    );
+    tokenAtual = resultado.token;
+    sessionStorage.setItem("frontcore_token", resultado.token);
+
+    if (resultado.precisaTrocarSenha) {
+      showView(viewNewpass);
+    } else {
+      irParaHomeEm(600, "Login confirmado", "Entrando...");
+    }
+  } catch (err) {
+    loginError.textContent = err.message;
+    loginError.hidden = false;
+  } finally {
+    btnLogin.disabled = false;
+  }
 });
 
-formNewpass.addEventListener("submit", (e) => {
+formNewpass.addEventListener("submit", async (e) => {
   e.preventDefault();
+  newpassError.hidden = true;
+
   const nova = document.getElementById("nova-senha").value;
   const confirma = document.getElementById("confirma-senha").value;
 
@@ -59,9 +82,15 @@ formNewpass.addEventListener("submit", (e) => {
     newpassError.hidden = false;
     return;
   }
-  newpassError.hidden = true;
-  // Marca essa aba como "logada" (só dura a sessão do navegador) — é o que
-  // o portão simples nas outras páginas confere antes de deixar entrar.
-  sessionStorage.setItem("frontcore_logado", "1");
-  showView(viewDone);
+
+  btnNewpass.disabled = true;
+  try {
+    await trocarSenha(tokenAtual, nova);
+    irParaHomeEm(900, "Senha alterada", "Entrando...");
+  } catch (err) {
+    newpassError.textContent = err.message;
+    newpassError.hidden = false;
+  } finally {
+    btnNewpass.disabled = false;
+  }
 });

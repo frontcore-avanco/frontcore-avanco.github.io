@@ -3,10 +3,11 @@
 <head>
 <meta charset="utf-8">
 <script>
-  // Portão simples: se essa aba não passou pelo login, volta pro início.
-  // Não é autenticação de verdade (site estático, sem servidor) — só evita
-  // o acesso casual direto por link, sem passar pela tela de login.
-  if (sessionStorage.getItem("frontcore_logado") !== "1") location.replace("../");
+  // Portão simples: se essa aba não tem um token de sessão, volta pro
+  // início. Isso não substitui a validação de verdade (essa é feita no
+  // servidor sempre que a página chama a API) — é só uma conveniência de
+  // navegação, pra não cair direto numa página interna sem ter logado.
+  if (!sessionStorage.getItem("frontcore_token")) location.replace("../");
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>FrontCore</title>
@@ -357,7 +358,7 @@
 <div class="field"></div>
 <div class="halo"></div>
 
-<a class="login-link" href="../" onclick="sessionStorage.removeItem('frontcore_logado')">Sair</a>
+<a class="login-link" href="../" id="link-sair">Sair</a>
 
 <div class="quicklinks">
   <a class="quicklink quicklink-avanco" href="https://www.avancao.com.br/suporte/atendimentos" target="_blank" rel="noopener noreferrer">Atendimento ↗</a>
@@ -455,6 +456,14 @@
   }
   tick();
   setInterval(tick, 1000);
+</script>
+<script type="module">
+  import { logout } from "../assets/js/auth-client.js";
+  document.getElementById("link-sair").addEventListener("click", () => {
+    const token = sessionStorage.getItem("frontcore_token");
+    sessionStorage.removeItem("frontcore_token");
+    logout(token);
+  });
 </script>
 <script type="module" src="../assets/js/help-widget.js"></script>
 </body>

@@ -116,13 +116,6 @@ body {
   font-size: 40px;
 }
 
-.proto-note {
-  font-size: 11px;
-  color: var(--outline);
-  text-align: center;
-  line-height: 1.5;
-}
-
 .back-home {
   text-align: center;
   font-size: 13px;
