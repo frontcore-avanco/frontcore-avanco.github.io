@@ -1,4 +1,4 @@
-# Atualiza o status da SEFAZ MG a cada 10 minutos e publica o resultado na
+# Atualiza o status da SEFAZ MG a cada 10 minutos (minutos 7, 17, 27...) e publica o resultado na
 # branch `status-data` (arquivo sefaz-mg.json), que a tela inicial do
 # FrontCore lê. A branch é recriada a cada execução (push forçado) pra não
 # encher o histórico do site com um commit a cada 10 minutos.
@@ -6,7 +6,8 @@ name: Status SEFAZ MG
 
 on:
   schedule:
-    - cron: "*/10 * * * *"
+    # minutos "quebrados" de propósito: o GitHub atrasa mais os horários redondos
+    - cron: "7,17,27,37,47,57 * * * *"
   workflow_dispatch:
 
 permissions:
