@@ -1,8 +1,6 @@
 // -----------------------------------------------------------------------
-// icones.js — ícones de linha (SVG inline, 24x24) e o logo do FrontCore.
-// Tudo desenhado aqui mesmo, sem imagem nem biblioteca externa. Se a
-// Avanço tiver o logo oficial em arquivo, é só trocar `logoMarca` e
-// `logoCompleto` por uma <img>.
+// icones.js — ícones de linha (SVG inline, 24x24), desenhados aqui mesmo,
+// sem biblioteca externa. O logo do FrontCore é imagem (assets/img).
 // -----------------------------------------------------------------------
 
 const CAMINHOS = {
@@ -50,25 +48,5 @@ export function icone(nome, classe = "") {
     `<svg class="icone ${classe}" viewBox="0 0 24 24" fill="none" stroke="currentColor" ` +
     `stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">` +
     `<path d="${d}"/></svg>`
-  );
-}
-
-/** Marca (A estilizado com a curva verde-limão). O degradê "lg-verde" é
- * declarado uma vez só no index.html, pra não repetir o id. */
-export function logoMarca(classe = "") {
-  return (
-    `<svg class="logo-marca ${classe}" viewBox="0 0 100 100" aria-hidden="true">` +
-    `<path d="M6 94 L44 6 H60 L28 94 Z" fill="#0a1a7c"/>` +
-    `<path d="M50 6 H66 L94 94 H76 Z" fill="#0b2a9a"/>` +
-    `<path d="M3 62 C 30 78, 62 62, 92 28 C 70 70, 30 92, 3 62 Z" fill="url(#lg-verde)"/>` +
-    `</svg>`
-  );
-}
-
-/** Marca + nome "FrontCore" (Front azul, Core verde). */
-export function logoCompleto(classe = "") {
-  return (
-    `<span class="logo-completo ${classe}">${logoMarca()}` +
-    `<span class="logo-texto"><span class="logo-front">Front</span><span class="logo-core">Core</span></span></span>`
   );
 }

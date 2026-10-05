@@ -43,16 +43,7 @@ button { font: inherit; color: inherit; }
 }
 
 .logo-link { text-decoration: none; display: inline-flex; flex: none; }
-.logo-completo { display: inline-flex; align-items: center; gap: 8px; }
-.logo-marca { width: 54px; height: 54px; flex: none; }
-.logo-texto { font-family: var(--font-display); font-weight: 900; font-size: 38px; letter-spacing: -0.02em; line-height: 1; }
-.logo-front { color: #0a1a7c; }
-.logo-core {
-  background: linear-gradient(90deg, #6aa40f, #b9d62c);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
+.logo-img { height: 56px; width: auto; display: block; }
 
 .tagline { margin: 0; font-size: 13px; line-height: 1.35; color: var(--on-surface-variant); flex: none; }
 
@@ -249,31 +240,18 @@ button { font: inherit; color: inherit; }
 .nav-item .item-texto { flex: 1; min-width: 0; }
 .item-externo { display: inline-flex; opacity: 0.55; }
 .item-externo .icone { width: 14px; height: 14px; }
-.desativado { opacity: 0.55; cursor: default; }
-.desativado:hover { background: none; }
-.item-tag { font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; border: 1px solid currentColor; border-radius: 999px; padding: 1px 7px; opacity: 0.8; }
 
 /* ---------- conteúdo ---------- */
 .principal { padding: 20px 0 32px; min-width: 0; }
 
 .hero-banner {
-  position: relative;
   overflow: hidden;
-  min-height: 200px;
   border-radius: 16px 16px 0 0;
   border: 1px solid var(--outline-variant);
   border-bottom: none;
-  background: linear-gradient(100deg, #eef3ff 0%, #f9fbff 52%, #d4e0ff 100%);
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  padding: 22px 22px 22px 6%;
+  line-height: 0;
 }
-.hero-arte { position: absolute; right: 0; top: 0; height: 100%; width: 44%; }
-.hero-logo { position: relative; z-index: 1; text-align: center; max-width: 56%; }
-.hero-logo .logo-marca { width: clamp(56px, 6.4vw, 96px); height: clamp(56px, 6.4vw, 96px); }
-.hero-logo .logo-texto { font-size: clamp(44px, 5.2vw, 78px); }
-.hero-logo p { margin: 6px 0 0; font-size: clamp(14px, 1.45vw, 20px); color: var(--on-surface); }
+.hero-banner img { width: 100%; height: auto; display: block; }
 
 .vantagens {
   list-style: none;
@@ -411,7 +389,6 @@ button { font: inherit; color: inherit; }
 .link-item > .icone { color: var(--primary); }
 .link-item .item-texto { flex: 1; min-width: 0; }
 .link-item .item-externo { color: var(--on-surface-variant); }
-.link-item.desativado:hover { background: none; }
 
 .scrim { position: fixed; inset: 80px 0 0 0; background: rgba(2, 8, 50, 0.45); z-index: 24; }
 .scrim[hidden] { display: none; }
@@ -464,18 +441,12 @@ button { font: inherit; color: inherit; }
   .topo { height: 68px; }
   .lateral { top: 68px; }
   .scrim { inset: 68px 0 0 0; }
-  .logo-marca { width: 40px; height: 40px; }
-  .logo-texto { font-size: 28px; }
   .status-topo, #usuario-seta { display: none; }
   .busca-global { flex-basis: 0; }
-  .topo .logo-texto { display: none; }
   .topo { gap: 10px; }
-  .hero-banner { justify-content: center; padding: 22px 14px; }
-  .hero-arte { display: none; }
-  .hero-logo { max-width: 100%; }
-  .hero-logo .logo-marca { width: 56px; height: 56px; }
-  .hero-logo .logo-texto { font-size: 44px; }
-  .hero-logo p { font-size: 14px; }
+  .logo-link { width: 50px; overflow: hidden; }
+  .logo-img { height: 38px; }
+  .hero-banner img { height: 120px; object-fit: cover; object-position: 44% 50%; }
   .filtros { margin-left: 0; }
   .busca-ferramenta { flex: 1 1 100%; }
   .busca-ferramenta input { width: 100%; }

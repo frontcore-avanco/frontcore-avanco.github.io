@@ -4,7 +4,7 @@
 // usuário, status, relógio e o menu lateral no celular.
 // -----------------------------------------------------------------------
 import { FERRAMENTAS, RECURSOS, LINKS, AJUDA, VANTAGENS } from "./dados.js";
-import { icone, logoCompleto } from "./icones.js";
+import { icone } from "./icones.js";
 import { MANUALS } from "../assets/js/manuals-data.js";
 import { searchManuals } from "../assets/js/help-search.js";
 import { USUARIOS } from "../assets/js/usuarios.js";
@@ -32,7 +32,7 @@ const ACOES = {
 
 // ---- cabeçalho --------------------------------------------------------------
 function montarCabecalho() {
-  $("logo-topo").innerHTML = logoCompleto();
+  $("logo-topo").innerHTML = '<img class="logo-img" src="../assets/img/logo-frontcore.webp" alt="FrontCore">';
   $("btn-menu").innerHTML = icone("menu");
   $("busca-icone").innerHTML = icone("search");
   $("btn-sino").innerHTML = icone("bell");
@@ -67,9 +67,6 @@ function atualizarRelogio() {
 function itemHtml(item, classe) {
   const conteudo = `${icone(item.icone)}<span class="item-texto">${item.titulo}</span>`;
   if (item.acao) return `<button type="button" class="${classe}" data-acao="${item.acao}">${conteudo}</button>`;
-  if (item.semEndereco) {
-    return `<span class="${classe} desativado" title="Endereço ainda não informado">${conteudo}<span class="item-tag">em breve</span></span>`;
-  }
   const externo = ehExterno(item.href);
   const abrirFora = externo ? ' target="_blank" rel="noopener noreferrer"' : "";
   const setinha = externo ? `<span class="item-externo">${icone("external")}</span>` : "";
@@ -92,15 +89,7 @@ function montarLateral() {
 // ---- hero ------------------------------------------------------------------------------
 function montarHero() {
   $("hero").innerHTML =
-    `<div class="hero-banner">` +
-    `<svg class="hero-arte" viewBox="0 0 420 200" preserveAspectRatio="xMaxYMid slice" aria-hidden="true">` +
-    `<defs><linearGradient id="g-predio" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8fb0ff"/><stop offset="1" stop-color="#0a1fa0"/></linearGradient></defs>` +
-    `<polygon points="150,0 420,0 420,200 262,200" fill="url(#g-predio)"/>` +
-    `<polygon points="262,200 338,46 420,46 420,200" fill="#06127a" opacity=".5"/>` +
-    `<path d="M308 200 L356 24 M356 24 L404 200" stroke="#fff" stroke-width="9" opacity=".32" fill="none"/>` +
-    `</svg>` +
-    `<div class="hero-logo">${logoCompleto("grande")}<p>Todas as ferramentas do suporte, em um só lugar.</p></div>` +
-    `</div>` +
+    `<div class="hero-banner"><img src="../assets/img/banner-frontcore.webp" alt="FrontCore — todas as ferramentas do suporte, em um só lugar."></div>` +
     `<ul class="vantagens">` +
     VANTAGENS.map(
       (v) =>
@@ -193,7 +182,7 @@ function indiceDeBusca() {
   return [
     ...FERRAMENTAS.map((f) => ({ tipo: "ferramenta", titulo: f.titulo, texto: f.desc, href: f.href, icone: f.icone })),
     ...RECURSOS.map((r) => ({ tipo: "recurso", titulo: r.titulo, texto: r.desc, href: r.href, acao: r.acao, icone: r.icone })),
-    ...LINKS.filter((l) => !l.semEndereco).map((l) => ({ tipo: "link", titulo: l.titulo, texto: "", busca: l.busca, href: l.href, icone: l.icone })),
+    ...LINKS.map((l) => ({ tipo: "link", titulo: l.titulo, texto: "", busca: l.busca, href: l.href, icone: l.icone })),
     ...AJUDA.map((a) => ({ tipo: "ajuda", titulo: a.titulo, texto: "", href: a.href, icone: a.icone })),
   ];
 }
