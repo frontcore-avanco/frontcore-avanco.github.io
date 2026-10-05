@@ -8,6 +8,11 @@ on:
   schedule:
     # minutos "quebrados" de propósito: o GitHub atrasa mais os horários redondos
     - cron: "7,17,27,37,47,57 * * * *"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/status-sefaz.yml"
+      - "ferramentas/status-sefaz.mjs"
   workflow_dispatch:
 
 permissions:
