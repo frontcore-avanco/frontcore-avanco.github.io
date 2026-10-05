@@ -1,0 +1,42 @@
+# Atualiza o status da SEFAZ MG a cada 10 minutos e publica o resultado na
+# branch `status-data` (arquivo sefaz-mg.json), que a tela inicial do
+# FrontCore lê. A branch é recriada a cada execução (push forçado) pra não
+# encher o histórico do site com um commit a cada 10 minutos.
+name: Status SEFAZ MG
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: status-sefaz
+  cancel-in-progress: true
+
+jobs:
+  atualizar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Consultar a Zorte
+        run: node ferramentas/status-sefaz.mjs "$RUNNER_TEMP/sefaz-mg.json"
+
+      - name: Publicar na branch status-data
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          mkdir "$RUNNER_TEMP/saida"
+          cp "$RUNNER_TEMP/sefaz-mg.json" "$RUNNER_TEMP/saida/"
+          cd "$RUNNER_TEMP/saida"
+          git init -q -b status-data
+          git config user.name "frontcore-status-bot"
+          git config user.email "frontcore-status-bot@users.noreply.github.com"
+          git add sefaz-mg.json
+          git commit -q -m "Status SEFAZ MG: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          git push -q -f "https://x-access-token:${TOKEN}@github.com/${REPO}.git" status-data

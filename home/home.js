@@ -169,10 +169,79 @@ function montarDireita() {
     `<section class="painel"><header class="painel-topo"><h2>Status do Sistema</h2>` +
     `<span class="online"><span class="ponto"></span>Online</span></header>` +
     `<ul class="lista-status">${STATUS_INICIAL.map(linhaStatus).join("")}</ul></section>` +
+    painelSefaz() +
     `<section class="painel"><header class="painel-topo"><h2>Links Rápidos</h2>${icone("external", "painel-icone")}</header>` +
     `<ul class="lista-links">${LINKS.map((l) => `<li>${itemHtml(l, "link-item")}</li>`).join("")}</ul></section>` +
     `<section class="painel"><header class="painel-topo"><h2>${icone("help-circle", "painel-icone-esq")}Ajuda e Suporte</h2></header>` +
     `<ul class="lista-links">${AJUDA.map((a) => `<li>${itemHtml(a, "link-item")}</li>`).join("")}</ul></section>`;
+}
+
+// ---- SEFAZ MG ---------------------------------------------------------------------------
+// Um robô do GitHub (.github/workflows/status-sefaz.yml) consulta o monitor
+// da Zorte a cada 10 minutos e publica o resultado nesta branch; aqui só
+// lemos esse arquivo. O que aparece é o estado do monitor independente, não
+// um comunicado oficial da SEFAZ.
+const URL_SEFAZ = "https://raw.githubusercontent.com/frontcore-avanco/frontcore-avanco.github.io/status-data/sefaz-mg.json";
+const LIMITE_DESATUALIZADO_MIN = 45;
+const TOM_SEFAZ = {
+  normal: "verde",
+  instavel: "amarelo",
+  lentidao: "laranja",
+  parada: "vermelho",
+  contingencia: "azul",
+  desconhecido: "cinza",
+  indisponivel: "cinza",
+};
+
+function painelSefaz() {
+  const linha = (id, nome) =>
+    `<li data-sefaz="${id}"><span class="semaforo tom-cinza"></span><span class="sefaz-doc">${nome}</span>` +
+    `<span class="sefaz-estado">Verificando...</span></li>`;
+  return (
+    `<section class="painel" id="painel-sefaz"><header class="painel-topo"><h2>SEFAZ MG</h2>` +
+    `<span class="sefaz-hora" id="sefaz-hora"></span></header>` +
+    `<ul class="lista-sefaz">${linha("nfce", "NFC-e")}${linha("nfe", "NF-e")}</ul>` +
+    `<p class="sefaz-rodape">Monitor independente, não é o comunicado oficial da SEFAZ. ` +
+    `Conferir: <a href="https://monitor.zorte.com.br/nfce" target="_blank" rel="noopener noreferrer">Zorte</a> · ` +
+    `<a href="https://monitor.tecnospeed.com.br/?filter-doc=nfce&filter-uf=mg" target="_blank" rel="noopener noreferrer">Tecnospeed</a></p></section>`
+  );
+}
+
+function definirSefaz(id, texto, tom) {
+  const li = document.querySelector(`[data-sefaz="${id}"]`);
+  if (!li) return;
+  li.querySelector(".semaforo").className = `semaforo tom-${tom}`;
+  const estado = li.querySelector(".sefaz-estado");
+  estado.textContent = texto;
+  estado.className = `sefaz-estado texto-${tom}`;
+}
+
+async function carregarSefaz() {
+  let dados = null;
+  try {
+    const resp = await fetch(URL_SEFAZ, { cache: "no-store" });
+    if (resp.ok) dados = await resp.json();
+  } catch {
+    dados = null;
+  }
+
+  const idadeMin = dados ? (Date.now() - new Date(dados.atualizadoEm).getTime()) / 60000 : Infinity;
+  if (!dados || !(idadeMin <= LIMITE_DESATUALIZADO_MIN)) {
+    for (const id of ["nfce", "nfe"]) definirSefaz(id, dados ? "Dados desatualizados" : "Sem dados", "cinza");
+    $("sefaz-hora").textContent = dados
+      ? `última leitura ${new Date(dados.atualizadoEm).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })}`
+      : "";
+    return;
+  }
+
+  for (const id of ["nfce", "nfe"]) {
+    const d = dados.docs?.[id];
+    if (!d) definirSefaz(id, "Sem dados", "cinza");
+    else definirSefaz(id, d.rotulo, TOM_SEFAZ[d.estado] || "cinza");
+  }
+  const hora = new Date(dados.atualizadoEm);
+  const p = (n) => String(n).padStart(2, "0");
+  $("sefaz-hora").textContent = `atualizado às ${p(hora.getHours())}:${p(hora.getMinutes())}`;
 }
 
 // ---- busca global (Ctrl+K) ----------------------------------------------------------------
@@ -344,6 +413,8 @@ ligarPopover("btn-usuario", "pop-usuario");
 atualizarRelogio();
 setInterval(atualizarRelogio, 20000);
 verificarStatus();
+carregarSefaz();
+setInterval(carregarSefaz, 5 * 60 * 1000);
 
 document.addEventListener("click", (e) => {
   if (!e.target.closest(".menu-sino, .menu-usuario")) fecharPopovers();
