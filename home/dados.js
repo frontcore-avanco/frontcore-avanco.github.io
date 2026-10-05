@@ -56,7 +56,7 @@ export const FERRAMENTAS = [
   {
     id: "painel-ana",
     titulo: "Painel ANA",
-    desc: "Gerenciador de pendências ANA — em desenvolvimento.",
+    desc: "Gestor ANA: programa (.exe) instalado na máquina do cliente. Em desenvolvimento.",
     href: "../painel-ana/",
     icone: "bars",
     cor: "rosa",
@@ -65,7 +65,7 @@ export const FERRAMENTAS = [
   {
     id: "replicador-pdv",
     titulo: "Replicador de PDV",
-    desc: "Replica configurações e dados entre terminais de PDV.",
+    desc: "Programa (.exe) local que replica e reconfigura PDVs pela rede do cliente. Em desenvolvimento.",
     href: "../replicador-pdv/",
     icone: "monitor",
     cor: "turquesa",
