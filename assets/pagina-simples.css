@@ -1,0 +1,40 @@
+/* Páginas de texto do FrontCore (Ajuda, Manuais) — usa os tokens de theme.css. */
+
+* { box-sizing: border-box; }
+body { margin: 0; font-family: var(--font-body); background: var(--surface); color: var(--on-surface); }
+
+header.topbar { background: var(--primary); color: var(--on-primary); padding: var(--space-m) var(--space-l); }
+.topbar-inner { max-width: 900px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-s) var(--space-l); }
+.topbar-inner h1 { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 22px; }
+.topbar-inner .subtitle { font-size: 13px; color: var(--primary-container); }
+a.back { color: var(--on-primary); opacity: 0.85; text-decoration: none; font-size: 13px; }
+a.back:hover { opacity: 1; text-decoration: underline; }
+
+main { max-width: 900px; margin: 0 auto; padding: var(--space-xl) var(--space-l) var(--space-xxl); display: flex; flex-direction: column; gap: var(--space-l); }
+main > p.intro { margin: 0; line-height: 1.6; color: var(--on-surface-variant); }
+
+section.bloco, details.cartao {
+  background: var(--surface-container-lowest);
+  border: 1px solid var(--outline-variant);
+  border-radius: 14px;
+  padding: var(--space-l) var(--space-xl);
+}
+section.bloco h2 { margin: 0 0 var(--space-s); font-family: var(--font-display); font-size: 19px; color: var(--primary); }
+section.bloco h3 { margin: var(--space-l) 0 var(--space-xs); font-family: var(--font-display); font-size: 15px; }
+section.bloco p, section.bloco li { font-size: 14px; line-height: 1.65; color: var(--on-surface-variant); }
+section.bloco ul, section.bloco ol { margin: var(--space-xs) 0; padding-left: 22px; }
+code, kbd { background: var(--surface-container); border-radius: 4px; padding: 1px 6px; font-size: 13px; }
+
+details.cartao { padding: 0; }
+details.cartao > summary { cursor: pointer; padding: var(--space-m) var(--space-xl); font-family: var(--font-display); font-weight: 700; font-size: 16px; color: var(--primary); }
+details.cartao .corpo { padding: 0 var(--space-xl) var(--space-l); }
+details.cartao .fonte { margin: 0 0 var(--space-m); font-size: 12px; color: var(--outline); }
+details.cartao h3 { margin: var(--space-l) 0 var(--space-xs); font-family: var(--font-display); font-size: 15px; }
+details.cartao p { margin: 0; font-size: 14px; line-height: 1.65; color: var(--on-surface-variant); }
+
+dl.faq dt { margin-top: var(--space-l); font-weight: 700; font-size: 14px; color: var(--on-surface); }
+dl.faq dd { margin: var(--space-xs) 0 0; font-size: 14px; line-height: 1.65; color: var(--on-surface-variant); }
+
+.vazio { font-size: 14px; color: var(--on-surface-variant); }
+.footnote { font-size: 12px; text-align: center; color: var(--outline); padding: 0 0 var(--space-xxl); }
+.footnote a { color: var(--outline); }

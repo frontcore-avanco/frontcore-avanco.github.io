@@ -15,458 +15,91 @@
 <link href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@400;600;700;900&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/theme.css">
 <link rel="stylesheet" href="../assets/help-widget.css">
-<style>
-  body {
-    position: relative;
-    overflow-x: hidden;
-  }
-
-  /* textura de fundo: grade de pontos sutil + halo tonal, ambos discretos —
-     cobrem só a área do hero (600px), não a página inteira */
-  .field {
-    position: absolute;
-    inset: 0;
-    height: 600px;
-    z-index: 0;
-    pointer-events: none;
-    background-image:
-      radial-gradient(circle at 1px 1px, var(--outline-variant) 1px, transparent 0);
-    background-size: 28px 28px;
-    opacity: 0.35;
-    -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 38%, #000 0%, transparent 72%);
-            mask-image: radial-gradient(ellipse 70% 60% at 50% 38%, #000 0%, transparent 72%);
-  }
-
-  .halo {
-    position: absolute;
-    inset: 0;
-    height: 600px;
-    z-index: 0;
-    pointer-events: none;
-    background: radial-gradient(ellipse 60% 42% at 50% 30%, var(--primary-container) 0%, transparent 68%);
-    opacity: 0.55;
-  }
-
-  .hero {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: var(--space-l);
-    padding: var(--space-xxl) var(--space-l) var(--space-xl);
-    max-width: 640px;
-    margin: 0 auto;
-  }
-
-  .login-link {
-    position: fixed;
-    top: var(--space-l);
-    right: var(--space-l);
-    z-index: 2;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--on-surface-variant);
-    text-decoration: none;
-    padding: var(--space-xs) var(--space-m);
-    border-radius: 999px;
-    border: 1px solid var(--outline-variant);
-    background: var(--surface-container-low);
-    transition: color 0.15s ease, border-color 0.15s ease;
-  }
-  .login-link:hover, .login-link:focus-visible {
-    color: var(--primary);
-    border-color: var(--primary);
-  }
-
-  /* Lista de acessos rápidos a outros sites, um abaixo do outro. Em
-     telas estreitas/médias fica em fluxo normal (empurra o hero pra
-     baixo, mas não sobrepõe nada). Em telas largas vira uma coluna fixa
-     na margem esquerda (ver media query abaixo), pra não afastar o
-     "FrontCore" do centro só porque a lista cresceu. */
-  .quicklinks {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--space-s);
-    max-width: 640px;
-    margin: 0 auto;
-    padding: var(--space-l) var(--space-l) 0;
-  }
-
-  @media (min-width: 1100px) {
-    .quicklinks {
-      position: fixed;
-      top: var(--space-l);
-      left: var(--space-l);
-      max-width: none;
-      margin: 0;
-      padding: 0;
-      z-index: 2;
-    }
-  }
-
-  .quicklink {
-    font-size: 15px;
-    font-weight: 700;
-    text-decoration: none;
-    padding: var(--space-s) var(--space-l);
-    border-radius: 999px;
-    border: 1px solid transparent;
-    transition: filter 0.15s ease, transform 0.15s ease;
-  }
-  .quicklink:hover, .quicklink:focus-visible {
-    filter: brightness(0.92);
-    transform: translateY(-1px);
-  }
-
-  /* Cor de cada site — mesma cor pros dois do SiteF (a marca é a
-     mesma), branco com azul Avanço pros sites da própria empresa. */
-  .quicklink-sitef {
-    color: #fff;
-    background: #ff6600;
-  }
-  .quicklink-gsurf {
-    color: #fff;
-    background: #4f46e5;
-  }
-  .quicklink-avanco {
-    color: var(--primary);
-    background: #fff;
-    border-color: var(--primary);
-  }
-
-  .eyebrow {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-s);
-    padding: var(--space-xs) var(--space-l);
-    border-radius: 999px;
-    background: var(--secondary-container);
-    color: var(--on-secondary-container);
-    font-family: var(--font-body);
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    animation: rise 0.5s ease-out both;
-  }
-
-  h1 {
-    margin: 0;
-    font-family: var(--font-display);
-    font-weight: 900;
-    font-size: clamp(48px, 10vw, 96px);
-    line-height: 1;
-    letter-spacing: -0.02em;
-    color: var(--primary);
-    text-wrap: balance;
-    animation: rise 0.6s ease-out both;
-    animation-delay: 0.05s;
-  }
-
-  .rule {
-    width: 56px;
-    height: 4px;
-    border-radius: 999px;
-    background: var(--tertiary-container);
-    animation: rise 0.6s ease-out both;
-    animation-delay: 0.1s;
-  }
-
-  .tagline {
-    margin: 0;
-    font-family: var(--font-body);
-    font-size: 16px;
-    line-height: 1.5;
-    color: var(--on-surface-variant);
-    max-width: 46ch;
-    animation: rise 0.6s ease-out both;
-    animation-delay: 0.15s;
-  }
-
-  .status {
-    display: flex;
-    align-items: center;
-    gap: var(--space-m);
-    margin-top: var(--space-m);
-    padding: var(--space-s) var(--space-l);
-    border-radius: 999px;
-    background: var(--surface-container-low);
-    border: 1px solid var(--outline-variant);
-    font-size: 12px;
-    color: var(--on-surface-variant);
-    animation: rise 0.6s ease-out both;
-    animation-delay: 0.2s;
-  }
-
-  .status .dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--tertiary);
-    flex-shrink: 0;
-    animation: pulse 2.2s ease-in-out infinite;
-  }
-
-  .status b {
-    color: var(--on-surface);
-    font-weight: 600;
-  }
-
-  .status .sep {
-    width: 1px;
-    height: 12px;
-    background: var(--outline-variant);
-  }
-
-  .clock {
-    font-variant-numeric: tabular-nums;
-  }
-
-  .programs {
-    position: relative;
-    z-index: 1;
-    max-width: 1040px;
-    margin: 0 auto;
-    padding: var(--space-l) var(--space-l);
-  }
-
-  .programs:last-of-type {
-    padding-bottom: var(--space-xxl);
-  }
-
-  .programs h2 {
-    margin: 0 0 var(--space-m);
-    font-family: var(--font-body);
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--on-surface-variant);
-    text-align: center;
-  }
-
-  .program-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: var(--space-m);
-  }
-
-  .program-card {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--space-xs);
-    padding: var(--space-l);
-    border-radius: 16px;
-    background: var(--surface-container-low);
-    border: 1px solid var(--outline-variant);
-    text-decoration: none;
-    color: inherit;
-    transition: background-color 0.18s ease, border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
-  }
-
-  .program-card:hover,
-  .program-card:focus-visible {
-    background: var(--surface-container);
-    border-color: var(--primary);
-    transform: translateY(-3px);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 18%, transparent), 0 10px 24px rgba(0, 0, 0, 0.16);
-  }
-
-  .program-card:focus-visible {
-    outline: 2px solid var(--primary);
-    outline-offset: 2px;
-  }
-
-  .program-card .badge {
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--on-tertiary-container);
-    background: var(--tertiary-container);
-    padding: 2px var(--space-s);
-    border-radius: 999px;
-  }
-
-  .program-card .badge.badge-soon {
-    color: var(--on-secondary-container);
-    background: var(--secondary-container);
-  }
-
-  .program-card h3 {
-    margin: var(--space-xs) 0 0;
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 18px;
-    color: var(--primary);
-  }
-
-  .program-card p {
-    margin: 0;
-    font-size: 13px;
-    line-height: 1.5;
-    color: var(--on-surface-variant);
-  }
-
-  .program-card .go {
-    margin-top: var(--space-s);
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--primary);
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .program-card { transition: none; }
-  }
-
-  footer {
-    position: relative;
-    z-index: 1;
-    font-size: 12px;
-    color: var(--outline);
-    text-align: center;
-    padding: 0 var(--space-l) var(--space-xxl);
-  }
-
-  @keyframes rise {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  @keyframes pulse {
-    0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--tertiary) 45%, transparent); }
-    50% { box-shadow: 0 0 0 5px color-mix(in srgb, var(--tertiary) 0%, transparent); }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .eyebrow, h1, .rule, .tagline, .status, .status .dot {
-      animation: none;
-    }
-  }
-</style>
+<link rel="stylesheet" href="home.css">
 </head>
 <body>
 
-<div class="field"></div>
-<div class="halo"></div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="lg-verde" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#5f9c0c"/>
+      <stop offset="1" stop-color="#c3e12a"/>
+    </linearGradient>
+  </defs>
+</svg>
 
-<a class="login-link" href="../" id="link-sair">Sair</a>
+<header class="topo">
+  <button class="btn-menu" id="btn-menu" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="lateral"></button>
+  <a class="logo-link" href="./" id="logo-topo" aria-label="FrontCore — início"></a>
+  <p class="tagline">Ferramentas e conhecimento<br>do suporte, em um só lugar.</p>
 
-<div class="quicklinks">
-  <a class="quicklink quicklink-avanco" href="https://www.avancao.com.br/suporte/atendimentos" target="_blank" rel="noopener noreferrer">Atendimento ↗</a>
-  <a class="quicklink quicklink-avanco" href="https://bc.avancoinfo.com.br/" target="_blank" rel="noopener noreferrer">BCAvanco ↗</a>
-  <a class="quicklink quicklink-gsurf" href="https://parceiros.gsurfnet.com/login/login" target="_blank" rel="noopener noreferrer">Gsurf ↗</a>
-  <a class="quicklink quicklink-avanco" href="https://novo.avancoinfo.com.br/" target="_blank" rel="noopener noreferrer">NovoAvanço ↗</a>
-  <a class="quicklink quicklink-sitef" href="https://portaldocliente.softwareexpress.com.br/Login" target="_blank" rel="noopener noreferrer">PortalSitef ↗</a>
-  <a class="quicklink quicklink-avanco" href="https://www.avancao.com.br/equipes/cmrjc9j7w000e9rv4nbr862me" target="_blank" rel="noopener noreferrer">Quadro2F ↗</a>
-  <a class="quicklink quicklink-sitef" href="https://sitefexpressadm.softwareexpress.com.br/sitefwebadm/pages/inicial.zeus" target="_blank" rel="noopener noreferrer">SiteF ↗</a>
+  <div class="busca-global" id="busca-global">
+    <span class="busca-icone" id="busca-icone"></span>
+    <input type="text" id="busca-input" placeholder="Buscar ferramenta, manual ou assunto..." autocomplete="off" spellcheck="false" aria-label="Buscar ferramenta, manual ou assunto" aria-controls="busca-resultados" aria-expanded="false" role="combobox">
+    <kbd>Ctrl + K</kbd>
+    <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+  </div>
+
+  <div class="status-topo" title="Plataforma no ar">
+    <span class="ponto"></span>
+    <div class="status-texto"><strong>Sistema online</strong><span id="relogio">--/--/---- --:--</span></div>
+  </div>
+
+  <div class="menu-sino">
+    <button class="btn-icone" id="btn-sino" type="button" aria-label="Notificações" aria-expanded="false"></button>
+    <div class="popover" id="pop-sino" hidden>Sem notificações no momento.</div>
+  </div>
+
+  <div class="menu-usuario">
+    <button class="btn-usuario" id="btn-usuario" type="button" aria-expanded="false" aria-haspopup="true">
+      <span class="avatar" id="avatar">?</span>
+      <span class="usuario-texto"><strong id="usuario-nome">Usuário</strong><span>Suporte</span></span>
+      <span id="usuario-seta"></span>
+    </button>
+    <div class="popover popover-usuario" id="pop-usuario" hidden>
+      <p class="pop-nome" id="pop-nome"></p>
+      <p class="pop-email" id="pop-email"></p>
+      <a class="pop-sair" id="link-sair" href="../"><span id="sair-icone"></span>Sair</a>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="lateral" id="lateral" aria-label="Menu principal"></nav>
+
+  <main class="principal" id="principal">
+    <section class="hero" id="hero"></section>
+
+    <section class="bloco">
+      <div class="bloco-topo">
+        <h2 class="bloco-titulo"><span id="icone-ferramentas"></span>Ferramentas</h2>
+        <div class="filtros" id="filtros" role="group" aria-label="Filtrar ferramentas">
+          <button type="button" class="chip ativo" data-filtro="todos">Todos</button>
+          <button type="button" class="chip" data-filtro="disponivel">Disponíveis</button>
+          <button type="button" class="chip" data-filtro="breve">Em breve</button>
+        </div>
+        <label class="busca-ferramenta"><span id="icone-busca-ferramenta"></span>
+          <input type="search" id="filtro-texto" placeholder="Buscar ferramenta..." autocomplete="off" aria-label="Buscar ferramenta">
+        </label>
+      </div>
+      <div class="grade" id="grade-ferramentas"></div>
+      <p class="vazio" id="vazio-ferramentas" hidden>Nenhuma ferramenta encontrada para esse filtro.</p>
+    </section>
+
+    <section class="bloco">
+      <div class="bloco-topo">
+        <h2 class="bloco-titulo"><span id="icone-recursos"></span>Recursos</h2>
+      </div>
+      <div class="grade" id="grade-recursos"></div>
+    </section>
+  </main>
+
+  <aside class="direita" id="direita"></aside>
 </div>
 
-<div class="hero">
-  <span class="eyebrow">Avanço · Plataforma</span>
-  <h1>FrontCore</h1>
-  <span class="rule"></span>
-  <p class="tagline">
-    Núcleo web dos programas Avanço — a base sobre a qual as próximas
-    ferramentas vão rodar e conversar com as máquinas locais.
-  </p>
-  <div class="status">
-    <span class="dot"></span>
-    <span><b>Sistema on-line</b></span>
-    <span class="sep"></span>
-    <span class="clock" id="clock">--:--:--</span>
-    <span class="sep"></span>
-    <span>v0.7 · exercício 7</span>
-  </div>
-</div>
+<div class="scrim" id="scrim" hidden></div>
 
-<section class="programs">
-  <h2>Programas</h2>
-  <div class="program-grid">
-    <a class="program-card" href="../criador-de-cupons/">
-      <span class="badge">Disponível</span>
-      <h3>Criador de Cupons</h3>
-      <p>Recria e gera cupons fiscais (NFC-e) a partir do XML — direto no navegador, sem instalar nada.</p>
-      <span class="go">Abrir →</span>
-    </a>
-    <a class="program-card" href="../consulta-ambiente/">
-      <span class="badge">Disponível</span>
-      <h3>Consulta Ambiente</h3>
-      <p>Digite um CNPJ e veja em qual ambiente o cliente está cadastrado, com o número da loja e o código da filial.</p>
-      <span class="go">Abrir →</span>
-    </a>
-    <a class="program-card" href="../xml-para-csv/">
-      <span class="badge">Disponível</span>
-      <h3>XML para CSV</h3>
-      <p>Converte XMLs de NF-e/NFC-e (soltos, em pasta ou num .zip) numa planilha CSV pronta pra abrir no Excel.</p>
-      <span class="go">Abrir →</span>
-    </a>
-    <a class="program-card" href="../confere-diferenca/">
-      <span class="badge">Disponível</span>
-      <h3>Confere Diferença</h3>
-      <p>Compara a planilha do ERP Integral com a do tramitador e acha direto quais cupons/notas não batem entre os dois.</p>
-      <span class="go">Abrir →</span>
-    </a>
-    <a class="program-card" href="../renomeia-tudo/">
-      <span class="badge">Disponível</span>
-      <h3>Renomeia Tudo</h3>
-      <p>Troca, remove ou renomeia partes do nome de vários arquivos de uma pasta de uma vez — com prévia e desfazer.</p>
-      <span class="go">Abrir →</span>
-    </a>
-    <a class="program-card" href="../painel-ana/">
-      <span class="badge badge-soon">Em breve</span>
-      <h3>Painel ANA</h3>
-      <p>Gerenciador de pendências ANA — depende de uma ponte segura entre a nuvem e a rede de cada loja antes de ficar disponível aqui.</p>
-      <span class="go">Abrir →</span>
-    </a>
-    <a class="program-card" href="../replicador-pdv/">
-      <span class="badge badge-soon">Em breve</span>
-      <h3>Replicador de PDV</h3>
-      <p>Réplica configurações/dados entre terminais de PDV.</p>
-      <span class="go">Abrir →</span>
-    </a>
-  </div>
-</section>
-
-<section class="programs">
-  <h2>Recursos</h2>
-  <div class="program-grid">
-    <a class="program-card" href="../downloads/">
-      <span class="badge">Disponível</span>
-      <h3>Downloads</h3>
-      <p>Programas, drivers e ferramentas de suporte — balança, impressoras, pinpad, Linux e mais.</p>
-      <span class="go">Abrir →</span>
-    </a>
-  </div>
-</section>
-
-<footer>Acesse este mesmo endereço de qualquer computador, em qualquer lugar, para visualizar esta página.</footer>
-
-<script>
-  function tick() {
-    var el = document.getElementById('clock');
-    if (!el) return;
-    var now = new Date();
-    var hh = String(now.getHours()).padStart(2, '0');
-    var mm = String(now.getMinutes()).padStart(2, '0');
-    var ss = String(now.getSeconds()).padStart(2, '0');
-    el.textContent = hh + ':' + mm + ':' + ss;
-  }
-  tick();
-  setInterval(tick, 1000);
-</script>
-<script>
-  document.getElementById("link-sair").addEventListener("click", function () {
-    sessionStorage.removeItem("frontcore_token");
-  });
-</script>
+<script type="module" src="home.js"></script>
 <script type="module" src="../assets/js/help-widget.js"></script>
 </body>
 </html>

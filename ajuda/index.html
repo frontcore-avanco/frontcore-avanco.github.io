@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="utf-8">
+<script>
+  // Portão simples: se essa aba não passou pelo login, volta pro início.
+  // É só uma barreira de navegação (site estático, sem servidor) — não
+  // protege nada de quem souber contorná-la.
+  if (!sessionStorage.getItem("frontcore_token")) location.replace("../");
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Como utilizar o FrontCore</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@400;600;700;900&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/theme.css">
+<link rel="stylesheet" href="../assets/help-widget.css">
+<link rel="stylesheet" href="../assets/pagina-simples.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="back" href="../home/">← FrontCore</a>
+    <h1>Como utilizar o FrontCore</h1>
+    <span class="subtitle">Guia rápido e dúvidas frequentes</span>
+  </div>
+</header>
+
+<main>
+  <p class="intro">
+    O FrontCore reúne em um só lugar as ferramentas de apoio ao suporte, os
+    manuais e os atalhos para os sistemas que a equipe mais usa.
+  </p>
+
+  <section class="bloco">
+    <h2>Primeiros passos</h2>
+    <ol>
+      <li><strong>Entrar:</strong> use o seu e-mail corporativo e a senha inicial que você recebeu. No primeiro acesso é pedido para definir uma senha nova.</li>
+      <li><strong>Escolher a ferramenta:</strong> pelo menu lateral ou pelos cards da tela inicial. Os filtros <em>Disponíveis</em> e <em>Em breve</em> e o campo de busca ajudam a achar mais rápido.</li>
+      <li><strong>Buscar qualquer coisa:</strong> a barra do topo procura ferramentas, links e manuais. Atalho: <kbd>Ctrl</kbd> + <kbd>K</kbd>.</li>
+      <li><strong>Tirar uma dúvida técnica:</strong> o balão azul no canto da tela (Central de Ajuda) busca nos manuais enquanto você digita.</li>
+      <li><strong>Sair:</strong> pelo menu do seu nome, no canto superior direito.</li>
+    </ol>
+  </section>
+
+  <section class="bloco">
+    <h2>Ferramentas</h2>
+    <ul>
+      <li><strong>Criador de Cupons:</strong> recria e gera cupons fiscais (NFC-e) a partir do XML.</li>
+      <li><strong>Consulta Ambiente:</strong> mostra ambiente, número da loja e código da filial a partir do CNPJ.</li>
+      <li><strong>XML para CSV:</strong> converte XMLs de NF-e/NFC-e em planilha CSV para o Excel.</li>
+      <li><strong>Confere Diferença:</strong> compara o Integral ou a Saída do novo Avanço com o Tramitador e lista as notas que não batem.</li>
+      <li><strong>Renomeia Tudo:</strong> renomeia, remove ou troca partes do nome de vários arquivos de uma pasta (só no Chrome ou Edge).</li>
+      <li><strong>Painel ANA</strong> e <strong>Replicador de PDV:</strong> em desenvolvimento.</li>
+    </ul>
+    <p>Todas as ferramentas rodam no seu navegador: os arquivos que você usa não são enviados a nenhum servidor.</p>
+  </section>
+
+  <section class="bloco" id="faq">
+    <h2>Dúvidas frequentes</h2>
+    <dl class="faq">
+      <dt>Esqueci minha senha. E agora?</dt>
+      <dd>Peça a redefinição a quem administra o FrontCore. Você recebe uma senha inicial nova e define a sua de novo no primeiro acesso.</dd>
+
+      <dt>Troquei a senha, mas em outro computador ela pede de novo.</dt>
+      <dd>Por enquanto a senha nova fica salva só no navegador onde foi trocada. Em outro computador, outro navegador ou depois de limpar os dados do navegador, vale de novo a senha inicial e a troca é pedida outra vez.</dd>
+
+      <dt>O Renomeia Tudo não abre a janela de escolher pasta.</dt>
+      <dd>Esse recurso só existe no Chrome e no Edge. Abra o FrontCore em um deles.</dd>
+
+      <dt>Meus arquivos são enviados para algum lugar?</dt>
+      <dd>Não. XMLs, planilhas e pastas são processados dentro do próprio navegador.</dd>
+
+      <dt>Um link do menu aparece como "em breve".</dt>
+      <dd>O atalho ainda não tem endereço cadastrado. Avise quem administra para incluir.</dd>
+
+      <dt>Como peço uma ferramenta nova ou aviso de um problema?</dt>
+      <dd>Pelo painel <em>Ajuda e Suporte</em>, na tela inicial: <em>Solicitar nova ferramenta</em> ou <em>Reportar problema</em>.</dd>
+    </dl>
+  </section>
+</main>
+
+<p class="footnote"><a href="../home/">← Voltar ao FrontCore</a></p>
+
+<script type="module" src="../assets/js/help-widget.js"></script>
+</body>
+</html>

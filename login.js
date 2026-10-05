@@ -21,15 +21,16 @@ function showView(view) {
   for (const v of [viewLogin, viewNewpass, viewDone]) v.hidden = v !== view;
 }
 
-function entrar(token) {
+function entrar(token, usuario) {
   sessionStorage.setItem("frontcore_token", token);
+  sessionStorage.setItem("frontcore_usuario", JSON.stringify(usuario));
   showView(viewDone);
   setTimeout(() => {
     window.location.href = "home/";
   }, 600);
 }
 
-let sessao = null; // { email, token } enquanto a troca de senha não termina
+let sessao = null; // { email, nome, token } enquanto a troca de senha não termina
 
 formLogin.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -39,10 +40,10 @@ formLogin.addEventListener("submit", async (e) => {
   try {
     const resultado = await login(email, document.getElementById("login-senha").value);
     if (resultado.precisaTrocarSenha) {
-      sessao = { email, token: resultado.token };
+      sessao = { email, nome: resultado.nome, token: resultado.token };
       showView(viewNewpass);
     } else {
-      entrar(resultado.token);
+      entrar(resultado.token, { nome: resultado.nome, email: email.trim().toLowerCase() });
     }
   } catch (err) {
     loginError.textContent = err.message;
@@ -73,7 +74,7 @@ formNewpass.addEventListener("submit", async (e) => {
   btnNewpass.disabled = true;
   try {
     await trocarSenha(sessao.email, nova);
-    entrar(sessao.token);
+    entrar(sessao.token, { nome: sessao.nome, email: sessao.email.trim().toLowerCase() });
   } catch (err) {
     newpassError.textContent = err.message;
     newpassError.hidden = false;

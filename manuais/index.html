@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="utf-8">
+<script>
+  // Portão simples: se essa aba não passou pelo login, volta pro início.
+  // É só uma barreira de navegação (site estático, sem servidor) — não
+  // protege nada de quem souber contorná-la.
+  if (!sessionStorage.getItem("frontcore_token")) location.replace("../");
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manuais e Procedimentos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@400;600;700;900&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/theme.css">
+<link rel="stylesheet" href="../assets/help-widget.css">
+<link rel="stylesheet" href="../assets/pagina-simples.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="back" href="../home/">← FrontCore</a>
+    <h1>Manuais e Procedimentos</h1>
+    <span class="subtitle">Manuais técnicos e procedimentos da equipe</span>
+  </div>
+</header>
+
+<main>
+  <p class="intro">
+    Os mesmos manuais que a Central de Ajuda (balão azul) usa nas buscas,
+    aqui na íntegra. Clique no título para abrir.
+  </p>
+  <div id="lista" style="display:flex;flex-direction:column;gap:var(--space-m)"></div>
+</main>
+
+<p class="footnote"><a href="../home/">← Voltar ao FrontCore</a></p>
+
+<script type="module">
+  import { MANUALS } from "../assets/js/manuals-data.js";
+
+  const lista = document.getElementById("lista");
+  if (!MANUALS.length) {
+    lista.innerHTML = '<p class="vazio">Nenhum manual cadastrado ainda.</p>';
+  }
+
+  for (const manual of MANUALS) {
+    const detalhes = document.createElement("details");
+    detalhes.className = "cartao";
+    detalhes.id = manual.id;
+
+    const titulo = document.createElement("summary");
+    titulo.textContent = manual.titulo;
+    detalhes.appendChild(titulo);
+
+    const corpo = document.createElement("div");
+    corpo.className = "corpo";
+    if (manual.fonte) {
+      const fonte = document.createElement("p");
+      fonte.className = "fonte";
+      fonte.textContent = `Fonte: ${manual.fonte}`;
+      corpo.appendChild(fonte);
+    }
+    for (const secao of manual.secoes) {
+      const h = document.createElement("h3");
+      h.textContent = secao.titulo;
+      const p = document.createElement("p");
+      p.textContent = secao.texto;
+      corpo.append(h, p);
+    }
+    detalhes.appendChild(corpo);
+    lista.appendChild(detalhes);
+  }
+
+  // vindo da busca: abre e rola até o manual indicado em #id
+  const alvo = location.hash && document.getElementById(decodeURIComponent(location.hash.slice(1)));
+  if (alvo && alvo.tagName === "DETAILS") {
+    alvo.open = true;
+    alvo.scrollIntoView({ block: "start" });
+  }
+</script>
+<script type="module" src="../assets/js/help-widget.js"></script>
+</body>
+</html>
