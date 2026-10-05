@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="utf-8">
+<script>
+  // Portão simples: se essa aba não passou pelo login, volta pro início.
+  // É só uma barreira de navegação (site estático, sem servidor) — não
+  // protege nada de quem souber contorná-la.
+  if (!sessionStorage.getItem("frontcore_token")) location.replace("../");
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Renomeia Tudo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@400;600;700;900&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/theme.css">
+<link rel="stylesheet" href="../assets/help-widget.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="back" href="../home/">← FrontCore</a>
+    <h1>Renomeia Tudo</h1>
+    <span class="subtitle">Troca, remove ou renomeia partes do nome de vários arquivos de uma vez</span>
+    <a class="ajuda-link" href="#ajuda" id="link-ajuda">Ajuda / Como utilizar</a>
+  </div>
+</header>
+
+<main>
+  <section class="intro">
+    <span class="status-pill">Disponível</span>
+    <p>
+      Escolha uma pasta, diga o que deve mudar no nome dos arquivos e confira
+      a prévia antes de executar. <strong>Só o nome é alterado</strong> — o
+      conteúdo dos arquivos nunca é tocado.
+    </p>
+  </section>
+
+  <details class="ajuda" id="ajuda">
+    <summary>Ajuda / Como utilizar</summary>
+    <div class="ajuda-corpo">
+      <h3>O que a ferramenta faz</h3>
+      <p>
+        Aplica uma regra ao nome de todos os arquivos de uma pasta. Ela só
+        muda o <strong>nome</strong>: o arquivo em si fica intacto, e as
+        subpastas (e o que há dentro delas) não são mexidas. Funciona no
+        Chrome e no Edge — são os navegadores que deixam um site alterar
+        arquivos numa pasta que você autoriza.
+      </p>
+
+      <h3>Substituir texto</h3>
+      <p>Troca um trecho do nome por outro.</p>
+      <ul>
+        <li><code>OK_Contingencia</code> → <code>Contingencia</code>: procurar <code>OK_</code> e deixar "Trocar por" vazio.</li>
+        <li><code>nota_2024.pdf</code> → <code>NF_2024.pdf</code>: procurar <code>nota</code>, trocar por <code>NF</code>.</li>
+      </ul>
+      <p>
+        "Aplicar em" escolhe onde procurar: no <em>nome</em> (sem a extensão),
+        só na <em>extensão</em> ou no <em>nome completo</em>. Por padrão não
+        diferencia maiúsculas de minúsculas e troca todas as ocorrências.
+      </p>
+
+      <h3>Remover caracteres</h3>
+      <p>Apaga uma quantidade de caracteres a partir de uma posição. A posição 1 é o primeiro caractere (ou o último, se você contar a partir do fim).</p>
+      <ul>
+        <li>Remover os 3 primeiros: <code>OK_Contingencia</code> → <code>Contingencia</code> (a partir do início, posição 1, quantidade 3).</li>
+        <li>Remover os 2 últimos: <code>relatorio_01</code> → <code>relatorio_</code> (a partir do fim, posição 1, quantidade 2).</li>
+      </ul>
+
+      <h3>Renomear caracteres</h3>
+      <p>Troca uma quantidade de caracteres, a partir de uma posição, por um texto novo.</p>
+      <ul>
+        <li><code>Contingencia_0102</code>: trocar os 2 primeiros caracteres (<code>Co</code>) por <code>XX</code> → <code>XXntingencia_0102</code> (posição 1, quantidade 2).</li>
+        <li>Com quantidade <strong>0</strong> nada é apagado, o texto só é inserido: <code>Contingencia</code> → <code>OK_Contingencia</code> (posição 1, quantidade 0, texto <code>OK_</code>).</li>
+      </ul>
+
+      <h3>Trocar a extensão</h3>
+      <p>
+        Use <em>Substituir texto</em> com "Aplicar em: Extensão": procurar
+        <code>txt</code>, trocar por <code>pdf</code> → <code>a.txt</code> vira
+        <code>a.pdf</code>. <strong>Isso só muda o nome da extensão — não
+        converte o conteúdo</strong> do arquivo para outro formato.
+      </p>
+
+      <h3>Prévia, conflitos e desfazer</h3>
+      <ul>
+        <li>A prévia mostra o nome atual e o novo de cada arquivo, antes de qualquer alteração.</li>
+        <li><strong>Conflito</strong>: o novo nome já existe na pasta, ou mais de um arquivo ficaria com o mesmo nome. Esses arquivos não são renomeados.</li>
+        <li><strong>Não permitido</strong>: o nome ficaria vazio, teria caracteres que o Windows não aceita (<code>\ / : * ? " &lt; &gt; |</code>) ou a posição escolhida está além do tamanho do nome.</li>
+        <li>Depois de executar, o botão <strong>Desfazer</strong> devolve os arquivos aos nomes de antes.</li>
+        <li>Arquivo aberto em outro programa pode não ser renomeado — o resultado mostra quais falharam e por quê.</li>
+      </ul>
+    </div>
+  </details>
+
+  <fieldset class="step" id="passo-pasta">
+    <legend>1. Selecione a pasta</legend>
+    <div class="linha">
+      <button type="button" class="btn btn-secondary" id="btn-pasta">Selecionar pasta...</button>
+      <span class="info" id="info-pasta">Nenhuma pasta selecionada</span>
+      <button type="button" class="btn-link" id="btn-recarregar" hidden>Recarregar arquivos</button>
+    </div>
+    <p class="aviso" id="aviso-navegador" hidden>
+      Este navegador não permite alterar arquivos de uma pasta. Abra o
+      FrontCore no <strong>Chrome</strong> ou no <strong>Edge</strong>.
+    </p>
+  </fieldset>
+
+  <fieldset class="step" id="passo-regra" disabled>
+    <legend>2. Escolha a operação</legend>
+
+    <div class="operacoes">
+      <label class="operacao">
+        <input type="radio" name="operacao" value="substituir" checked>
+        <span class="op-titulo">Substituir texto</span>
+        <span class="op-desc">Troca um trecho do nome por outro</span>
+      </label>
+      <label class="operacao">
+        <input type="radio" name="operacao" value="remover">
+        <span class="op-titulo">Remover caracteres</span>
+        <span class="op-desc">Apaga caracteres a partir de uma posição</span>
+      </label>
+      <label class="operacao">
+        <input type="radio" name="operacao" value="renomear">
+        <span class="op-titulo">Renomear caracteres</span>
+        <span class="op-desc">Troca caracteres de uma posição por outro texto</span>
+      </label>
+    </div>
+
+    <div class="campos" data-op="substituir">
+      <div class="campo">
+        <label for="alvo">Aplicar em</label>
+        <select id="alvo">
+          <option value="nome">Nome do arquivo (sem a extensão)</option>
+          <option value="extensao">Extensão</option>
+          <option value="completo">Nome completo (com a extensão)</option>
+        </select>
+      </div>
+      <div class="campo">
+        <label for="procurar">Procurar</label>
+        <input type="text" id="procurar" autocomplete="off" spellcheck="false" placeholder="ex: OK_">
+      </div>
+      <div class="campo">
+        <label for="trocar-por">Trocar por</label>
+        <input type="text" id="trocar-por" autocomplete="off" spellcheck="false" placeholder="(vazio = apagar)">
+      </div>
+      <label class="marcar"><input type="checkbox" id="maiusculas"> Diferenciar maiúsculas de minúsculas</label>
+      <label class="marcar"><input type="checkbox" id="todas" checked> Substituir todas as ocorrências</label>
+    </div>
+
+    <div class="campos" data-op="remover" hidden>
+      <div class="campo">
+        <label for="contar-de-rem">Contar a partir do</label>
+        <select id="contar-de-rem">
+          <option value="inicio">Início do nome</option>
+          <option value="fim">Fim do nome</option>
+        </select>
+      </div>
+      <div class="campo curto">
+        <label for="posicao-rem">Posição</label>
+        <input type="number" id="posicao-rem" min="1" value="1">
+      </div>
+      <div class="campo curto">
+        <label for="quantidade-rem">Quantos caracteres</label>
+        <input type="number" id="quantidade-rem" min="1" value="1">
+      </div>
+    </div>
+
+    <div class="campos" data-op="renomear" hidden>
+      <div class="campo">
+        <label for="contar-de-ren">Contar a partir do</label>
+        <select id="contar-de-ren">
+          <option value="inicio">Início do nome</option>
+          <option value="fim">Fim do nome</option>
+        </select>
+      </div>
+      <div class="campo curto">
+        <label for="posicao-ren">Posição</label>
+        <input type="number" id="posicao-ren" min="1" value="1">
+      </div>
+      <div class="campo curto">
+        <label for="quantidade-ren">Quantos caracteres trocar</label>
+        <input type="number" id="quantidade-ren" min="0" value="1">
+      </div>
+      <div class="campo">
+        <label for="novo-texto">Novo texto</label>
+        <input type="text" id="novo-texto" autocomplete="off" spellcheck="false">
+      </div>
+      <p class="dica">Com 0 caracteres nada é apagado — o texto só é inserido na posição.</p>
+    </div>
+
+    <p class="dica" data-so-nome>Remover e Renomear caracteres atuam só no nome, sem mexer na extensão.</p>
+  </fieldset>
+
+  <fieldset class="step" id="passo-previa" disabled>
+    <legend>3. Prévia</legend>
+    <p class="resumo" id="resumo-previa">Selecione uma pasta e escolha a regra para ver a prévia.</p>
+    <label class="marcar" id="marcar-so-mudancas" hidden>
+      <input type="checkbox" id="so-mudancas" checked> Mostrar só os arquivos que mudam
+    </label>
+    <div class="tabela-wrap" id="tabela-wrap" hidden>
+      <table id="tabela-previa">
+        <thead>
+          <tr><th>Nome atual</th><th>Novo nome</th><th>Situação</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p class="dica" id="nota-limite" hidden></p>
+  </fieldset>
+
+  <fieldset class="step" id="passo-executar" disabled>
+    <legend>4. Executar</legend>
+    <div class="linha">
+      <button type="button" class="btn btn-primary" id="btn-executar" disabled>Renomear</button>
+      <span class="info" id="info-progresso"></span>
+    </div>
+
+    <div class="resultado" id="resultado" hidden>
+      <p class="resultado-resumo" id="resultado-resumo"></p>
+      <ul class="falhas" id="lista-falhas" hidden></ul>
+      <button type="button" class="btn btn-secondary" id="btn-desfazer" hidden>Desfazer</button>
+    </div>
+  </fieldset>
+</main>
+
+<p class="footnote">Roda 100% no seu navegador — nenhum arquivo é enviado a servidor algum. · <a href="../home/">← Voltar ao FrontCore</a></p>
+
+<script type="module" src="js/app.js"></script>
+<script type="module" src="../assets/js/help-widget.js"></script>
+</body>
+</html>
