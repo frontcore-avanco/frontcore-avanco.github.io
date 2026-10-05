@@ -33,29 +33,11 @@
     </form>
   </div>
 
-  <!-- ==================== TELA 2: TROCAR SENHA ==================== -->
-  <div class="auth-view" id="view-newpass" hidden>
-    <h2>Defina uma nova senha</h2>
-    <p class="hint">Primeiro acesso — antes de continuar, troque a senha padrão por uma sua.</p>
-    <form id="form-newpass">
-      <p class="error-msg" id="newpass-error" hidden></p>
-      <div class="field-group">
-        <label for="nova-senha">Nova senha</label>
-        <input type="password" id="nova-senha" required autocomplete="new-password" minlength="8">
-      </div>
-      <div class="field-group">
-        <label for="confirma-senha">Confirmar nova senha</label>
-        <input type="password" id="confirma-senha" required autocomplete="new-password" minlength="8">
-      </div>
-      <button type="submit" class="btn-primary">Salvar nova senha</button>
-    </form>
-  </div>
-
-  <!-- ==================== TELA 3: CONCLUÍDO ==================== -->
+  <!-- ==================== TELA 2: CONCLUÍDO ==================== -->
   <div class="auth-view" id="view-done" hidden>
     <div class="success-icon">✅</div>
-    <h2 id="done-titulo">Tudo certo</h2>
-    <p class="hint" id="done-mensagem">Entrando...</p>
+    <h2>Login confirmado</h2>
+    <p class="hint">Entrando...</p>
     <p class="back-home"><a href="home/">Entrar no FrontCore →</a></p>
   </div>
 </div>

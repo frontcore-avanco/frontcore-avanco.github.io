@@ -1,50 +1,54 @@
 // -----------------------------------------------------------------------
-// auth-client.js — fala com o backend do FrontCore Servidor (ver o
-// repositório FrontCore-Servidor) pra login de verdade. Usado pela tela
-// de login (login.js) e pelo "Sair" do dashboard.
+// auth-client.js — login da equipe SEM servidor (site estático no GitHub
+// Pages). As contas ficam em assets/js/usuarios.js, só com o hash da
+// senha (PBKDF2); o navegador calcula o hash do que a pessoa digitou e
+// compara.
 //
-// Troque API_BASE pro endereço público (desktop + Cloudflare Tunnel)
-// assim que ele estiver no ar — é o único lugar que precisa mudar.
+// Isso barra o acesso casual, mas não é segurança de verdade: o arquivo
+// de usuários é público (repositório público), então alguém técnico pode
+// tentar descobrir uma senha por força bruta offline. Por isso as senhas
+// são geradas aleatórias (ferramentas/gerar-usuario.mjs), nunca escolhidas
+// à mão. Quando existir servidor próprio, a versão com backend real
+// está na branch `login-servidor` deste repositório.
 // -----------------------------------------------------------------------
-export const API_BASE = "http://localhost:3000";
+import { USUARIOS } from "./usuarios.js";
 
-async function chamarApi(caminho, opcoes) {
-  let resp;
-  try {
-    resp = await fetch(API_BASE + caminho, opcoes);
-  } catch {
-    throw new Error("Não consegui falar com o servidor do FrontCore. Verifique sua conexão e tente de novo.");
+const encoder = new TextEncoder();
+
+function hexParaBytes(hex) {
+  const bytes = new Uint8Array(hex.length / 2);
+  for (let i = 0; i < bytes.length; i++) bytes[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
+  return bytes;
+}
+
+function bytesParaHex(bytes) {
+  return [...bytes].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+async function derivarHash(senha, saltHex, iteracoes) {
+  const chave = await crypto.subtle.importKey("raw", encoder.encode(senha), "PBKDF2", false, ["deriveBits"]);
+  const bits = await crypto.subtle.deriveBits(
+    { name: "PBKDF2", hash: "SHA-256", salt: hexParaBytes(saltHex), iterations: iteracoes },
+    chave,
+    256
+  );
+  return bytesParaHex(new Uint8Array(bits));
+}
+
+/** Confere e-mail + senha contra a lista de usuários. Devolve
+ * { token, nome } ou lança erro com a mensagem pra mostrar na tela. */
+export async function login(email, senha) {
+  const alvo = String(email || "").trim().toLowerCase();
+  const usuario = USUARIOS.find((u) => u.email.toLowerCase() === alvo);
+
+  // Mesmo quando o e-mail não existe, faz uma derivação "de mentirinha"
+  // pra a resposta demorar igual — assim não dá pra descobrir quais
+  // e-mails existem só pelo tempo de resposta.
+  const referencia = usuario || { salt: "00".repeat(16), hash: "", iteracoes: USUARIOS[0]?.iteracoes ?? 210000 };
+  const hashTentativa = await derivarHash(senha, referencia.salt, referencia.iteracoes);
+
+  if (!usuario || hashTentativa !== usuario.hash) {
+    throw new Error("E-mail ou senha incorretos.");
   }
-  const dados = await resp.json().catch(() => ({}));
-  if (!resp.ok) throw new Error(dados.erro || "Algo deu errado.");
-  return dados;
-}
-
-export function login(email, senha) {
-  return chamarApi("/api/auth/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, senha }),
-  });
-}
-
-export function trocarSenha(token, novaSenha) {
-  return chamarApi("/api/auth/trocar-senha", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ token, novaSenha }),
-  });
-}
-
-export async function logout(token) {
-  try {
-    await fetch(API_BASE + "/api/auth/logout", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token }),
-      keepalive: true,
-    });
-  } catch {
-    // servidor fora do ar não deveria impedir o logout local
-  }
+  return { token: crypto.randomUUID(), nome: usuario.nome };
 }
