@@ -5,8 +5,10 @@
 // O arquivo só guarda o hash, então a senha não dá pra recuperar depois:
 // se alguém esquecer, rode de novo pro mesmo e-mail e repasse a nova.
 //
-// Uso:
-//   node ferramentas/gerar-usuario.mjs "Nome Sobrenome:email@avancoinfo.com.br" "Outro Nome:outro@avancoinfo.com.br"
+// Uso (a senha é opcional — sem ela, gera uma aleatória):
+//   node ferramentas/gerar-usuario.mjs "Nome Sobrenome:email@avancoinfo.com.br" "Outro Nome:outro@avancoinfo.com.br:SenhaInicial"
+//
+// Toda conta criada por aqui pede troca de senha no primeiro acesso.
 //
 // Depois: git add assets/js/usuarios.js && git commit && git push
 // -----------------------------------------------------------------------
@@ -39,16 +41,16 @@ const usuarios = [...USUARIOS];
 const resumo = [];
 
 for (const entrada of entradas) {
-  const [nome, email] = entrada.split(":").map((p) => p?.trim());
+  const [nome, email, ...resto] = entrada.split(":").map((p) => p?.trim());
   if (!nome || !email || !email.includes("@")) {
-    console.error(`Ignorando "${entrada}" — formato esperado "Nome:email@dominio".`);
+    console.error(`Ignorando "${entrada}" — formato esperado "Nome:email@dominio[:senha]".`);
     continue;
   }
-  const senha = senhaAleatoria();
+  const senha = resto.join(":") || senhaAleatoria();
   const salt = crypto.randomBytes(16).toString("hex");
   const hash = crypto.pbkdf2Sync(senha, Buffer.from(salt, "hex"), ITERACOES, 32, "sha256").toString("hex");
 
-  const novo = { nome, email: email.toLowerCase(), salt, hash, iteracoes: ITERACOES };
+  const novo = { nome, email: email.toLowerCase(), salt, hash, iteracoes: ITERACOES, trocarSenha: true };
   const idx = usuarios.findIndex((u) => u.email.toLowerCase() === novo.email);
   if (idx >= 0) usuarios[idx] = novo;
   else usuarios.push(novo);

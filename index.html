@@ -33,7 +33,25 @@
     </form>
   </div>
 
-  <!-- ==================== TELA 2: CONCLUÍDO ==================== -->
+  <!-- ==================== TELA 2: TROCAR SENHA ==================== -->
+  <div class="auth-view" id="view-newpass" hidden>
+    <h2>Defina uma nova senha</h2>
+    <p class="hint">Primeiro acesso — troque a senha inicial por uma sua. Ela fica salva só neste navegador: em outro computador ou navegador, vale de novo a senha inicial.</p>
+    <form id="form-newpass">
+      <p class="error-msg" id="newpass-error" hidden></p>
+      <div class="field-group">
+        <label for="nova-senha">Nova senha</label>
+        <input type="password" id="nova-senha" required autocomplete="new-password" minlength="8">
+      </div>
+      <div class="field-group">
+        <label for="confirma-senha">Confirmar nova senha</label>
+        <input type="password" id="confirma-senha" required autocomplete="new-password" minlength="8">
+      </div>
+      <button type="submit" class="btn-primary">Salvar nova senha</button>
+    </form>
+  </div>
+
+  <!-- ==================== TELA 3: CONCLUÍDO ==================== -->
   <div class="auth-view" id="view-done" hidden>
     <div class="success-icon">✅</div>
     <h2>Login confirmado</h2>
