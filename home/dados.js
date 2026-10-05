@@ -106,8 +106,7 @@ export const LINKS = [
   { titulo: "GSF", busca: "gsurf parceiros", href: "https://parceiros.gsurfnet.com/login/login", icone: "gear" },
   { titulo: "Novo Avanço", busca: "novoavanco sistema", href: "https://novo.avancoinfo.com.br/", icone: "avanco" },
   { titulo: "Portal CTEF", busca: "portal sitef portal do cliente software express ctef", href: "https://portaldocliente.softwareexpress.com.br/Login", icone: "credit-card" },
-  { titulo: "Quadro 2F", busca: "quadro kanban equipe avancao", href: "https://www.avancao.com.br/equipes/cmrjc9j7w000e9rv4nbr862me", icone: "grid" },
-  { titulo: "Kanban Suporte", busca: "kanban quadro suporte", href: "https://www.avancao.com.br/equipes/cmrjc9j7w000e9rv4nbr862me", icone: "kanban" },
+  { titulo: "Quadro 2F", busca: "quadro kanban suporte equipe avancao", href: "https://www.avancao.com.br/equipes/cmrjc9j7w000e9rv4nbr862me", icone: "kanban" },
   { titulo: "SiteF", busca: "sitef admin software express", href: "https://sitefexpressadm.softwareexpress.com.br/sitefwebadm/pages/inicial.zeus", icone: "link" },
 ];
 
