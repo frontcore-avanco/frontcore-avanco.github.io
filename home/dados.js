@@ -54,6 +54,15 @@ export const FERRAMENTAS = [
     status: "disponivel",
   },
   {
+    id: "recuperador-db",
+    titulo: "Recuperador de Banco",
+    desc: "Recupera bancos do PDV (frenteavanco.db e SatCFE.db) com erro de corrupção e gera uma cópia corrigida.",
+    href: "../recuperador-db/",
+    icone: "database",
+    cor: "azul",
+    status: "disponivel",
+  },
+  {
     id: "painel-ana",
     titulo: "Painel ANA",
     desc: "Gestor ANA: programa (.exe) instalado na máquina do cliente. Em desenvolvimento.",

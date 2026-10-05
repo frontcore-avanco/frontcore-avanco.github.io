@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="utf-8">
+<script>
+  // Portão simples: se essa aba não passou pelo login, volta pro início.
+  // É só uma barreira de navegação (site estático, sem servidor) — não
+  // protege nada de quem souber contorná-la.
+  if (!sessionStorage.getItem("frontcore_token")) location.replace("../");
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Recuperador de Banco de Dados</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@400;600;700;900&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/theme.css">
+<link rel="stylesheet" href="../assets/help-widget.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="back" href="../home/">← FrontCore</a>
+    <h1>Recuperador de Banco de Dados</h1>
+    <span class="subtitle">Recupera bancos do PDV com erro "database disk image is malformed"</span>
+    <a class="ajuda-link" href="#ajuda" id="link-ajuda">Ajuda / Como utilizar</a>
+  </div>
+</header>
+
+<main>
+  <section class="intro">
+    <span class="status-pill">Disponível</span>
+    <p>
+      Escolha o banco com problema (<strong>frenteavanco.db</strong> ou
+      <strong>SatCFE.db</strong>). A ferramenta identifica qual é, copia tudo
+      que for legível para um banco novo e confere o resultado.
+      <strong>O arquivo original nunca é alterado</strong> — o trabalho é feito
+      numa cópia e o banco corrigido sai como um arquivo novo.
+    </p>
+  </section>
+
+  <p class="aviso" id="aviso-navegador" hidden></p>
+  <p class="aviso" id="aviso-aba" hidden>
+    O Recuperador já está aberto em outra aba. Feche a outra aba e recarregue
+    esta página (dois recuperadores ao mesmo tempo atrapalhariam um ao outro).
+  </p>
+
+  <details class="ajuda" id="ajuda">
+    <summary>Ajuda / Como utilizar</summary>
+    <div class="ajuda-corpo">
+      <h3>Quando usar</h3>
+      <p>
+        Quando o PDV ou o SAT acusa <code>database disk image is malformed</code>
+        (ou <code>file is not a database</code>) ao abrir o <code>frenteavanco.db</code>
+        ou o <code>SatCFE.db</code>. Esse erro costuma vir de queda de energia,
+        desligamento forçado da máquina, travamento do sistema ou problema no disco —
+        algo interrompe o banco no meio de uma gravação e uma parte do arquivo fica
+        inconsistente.
+      </p>
+
+      <h3>Antes de começar</h3>
+      <ul>
+        <li><strong>Feche o PDV e o programa do SAT</strong> na máquina de origem e copie o arquivo <code>.db</code> para o seu computador. Trabalhe sempre numa cópia — nunca no arquivo em uso.</li>
+        <li>Se existirem arquivos com o mesmo nome terminando em <code>-wal</code> ou <code>-shm</code>, copie junto, na mesma pasta. (Esta ferramenta usa apenas o <code>.db</code>; se houver <code>-wal</code> com movimento recente, avise o suporte antes.)</li>
+        <li>Use o <strong>Chrome</strong> ou o <strong>Edge</strong>. Bancos grandes (centenas de MB) levam alguns minutos e usam bastante memória; deixe a aba aberta e em primeiro plano.</li>
+      </ul>
+
+      <h3>Passo a passo</h3>
+      <ol>
+        <li><strong>Selecionar banco</strong> — clique em "Selecionar banco..." e escolha o arquivo <code>.db</code> copiado.</li>
+        <li><strong>Identificar</strong> — a ferramenta reconhece se é o <code>frenteavanco.db</code> ou o <code>SatCFE.db</code> (pela estrutura das tabelas e pelo nome), lê a estrutura e roda a verificação de integridade. O resultado e as mensagens de erro do banco aparecem na tela.</li>
+        <li><strong>Recuperar</strong> — cria um banco novo, com a mesma estrutura, e copia os dados tabela a tabela. Quando uma tabela tem área danificada, copia tudo que consegue ler a partir do começo e depois a partir do fim, pulando só o trecho ilegível.</li>
+        <li><strong>Validar</strong> — roda a verificação de integridade no banco novo e mostra quantos registros cada tabela ficou.</li>
+        <li><strong>Gerar banco corrigido</strong> — salva o arquivo novo, com o nome <code>&lt;nome&gt;_recuperado.db</code>. Substitua o banco do PDV por ele <em>somente</em> depois de guardar o original em outro lugar.</li>
+      </ol>
+
+      <h3>O que a ferramenta faz por baixo</h3>
+      <p>É o mesmo procedimento manual de suporte, feito automaticamente:</p>
+      <ul>
+        <li>Verificação de integridade: <code>PRAGMA integrity_check;</code> — se retornar <code>ok</code>, o banco não está corrompido.</li>
+        <li>Cópia para um banco novo (equivalente ao <code>.clone</code> do sqlite3): recria as tabelas, copia os registros, depois recria índices e gatilhos. Em área danificada, relê a tabela em ordem inversa para aproveitar o que está depois do trecho ruim.</li>
+        <li>As configurações do banco (tamanho de página, codificação, <code>user_version</code>) são preservadas.</li>
+      </ul>
+
+      <h3>Como ler o resultado</h3>
+      <ul>
+        <li><strong>Banco íntegro</strong> — todas as tabelas copiadas por inteiro e a verificação do banco novo deu <code>ok</code>.</li>
+        <li><strong>Recuperado com ressalvas</strong> — o banco novo está íntegro, mas alguma tabela foi lida em modo parcial. Registros que estavam <em>dentro</em> da área danificada podem ter ficado de fora; compare as contagens com o que o cliente espera e avise o suporte.</li>
+        <li><strong>Falha</strong> — o banco novo não passou na verificação. Baixe o registro (.txt) e envie ao suporte.</li>
+      </ul>
+
+      <h3>Limites</h3>
+      <ul>
+        <li>Tudo roda no seu navegador; nenhum arquivo é enviado a servidor.</li>
+        <li>Se o cabeçalho do arquivo estiver destruído (a ferramenta avisa que "não é um banco SQLite"), não há como recuperar por aqui.</li>
+        <li>O que estava dentro de páginas totalmente ilegíveis não é recuperável por nenhum método de cópia.</li>
+      </ul>
+    </div>
+  </details>
+
+  <ol class="trilha" id="trilha" aria-label="Etapas">
+    <li data-passo="selecionar" class="atual">Selecionar banco</li>
+    <li data-passo="identificar">Identificar</li>
+    <li data-passo="recuperar">Recuperar</li>
+    <li data-passo="validar">Validar</li>
+    <li data-passo="gerar">Gerar banco corrigido</li>
+  </ol>
+
+  <fieldset class="step" id="passo-selecionar">
+    <legend>1. Selecione o banco</legend>
+    <div class="linha">
+      <button type="button" class="btn btn-secondary" id="btn-arquivo">Selecionar banco...</button>
+      <input type="file" id="entrada-arquivo" accept=".db,.sqlite,.sqlite3,.db3" hidden>
+      <span class="info" id="info-arquivo">Nenhum arquivo selecionado</span>
+    </div>
+    <p class="dica">O arquivo escolhido só é lido: a ferramenta trabalha numa cópia temporária no seu navegador.</p>
+  </fieldset>
+
+  <fieldset class="step" id="passo-identificar" disabled>
+    <legend>2. Identificar</legend>
+    <div class="linha">
+      <button type="button" class="btn btn-primary" id="btn-identificar">Identificar e analisar</button>
+      <span class="info" id="info-identificar"></span>
+    </div>
+    <div class="barra" id="barra-identificar" hidden><div class="barra-preench"></div></div>
+    <div class="cartao" id="resultado-identificar" hidden></div>
+  </fieldset>
+
+  <fieldset class="step" id="passo-recuperar" disabled>
+    <legend>3. Recuperar</legend>
+    <div class="linha">
+      <button type="button" class="btn btn-primary" id="btn-recuperar">Recuperar dados</button>
+      <span class="info" id="info-recuperar"></span>
+    </div>
+    <div class="barra" id="barra-recuperar" hidden><div class="barra-preench"></div></div>
+  </fieldset>
+
+  <fieldset class="step" id="passo-validar" disabled>
+    <legend>4. Validar</legend>
+    <p class="info" id="info-validar">A validação roda sozinha ao fim da recuperação.</p>
+    <div class="cartao" id="resultado-validar" hidden></div>
+  </fieldset>
+
+  <fieldset class="step" id="passo-gerar" disabled>
+    <legend>5. Gerar banco corrigido</legend>
+    <div class="linha">
+      <button type="button" class="btn btn-primary" id="btn-salvar">Salvar banco corrigido</button>
+      <span class="info" id="info-salvar"></span>
+    </div>
+  </fieldset>
+
+  <section class="registro">
+    <div class="registro-topo">
+      <h2>Registro das etapas</h2>
+      <div class="registro-acoes">
+        <button type="button" class="btn-link" id="btn-copiar-log">Copiar</button>
+        <button type="button" class="btn-link" id="btn-baixar-log">Baixar registro (.txt)</button>
+      </div>
+    </div>
+    <pre class="log" id="log" aria-live="polite">O registro aparece aqui quando você começar.</pre>
+  </section>
+</main>
+
+<p class="footnote">Roda 100% no seu navegador — nenhum arquivo é enviado a servidor algum. · <a href="../home/">← Voltar ao FrontCore</a></p>
+
+<script type="module" src="js/app.js"></script>
+<script type="module" src="../assets/js/help-widget.js"></script>
+</body>
+</html>
