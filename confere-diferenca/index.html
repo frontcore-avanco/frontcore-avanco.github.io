@@ -34,7 +34,9 @@
     <p style="margin-top: var(--space-m);">
       Escolha os dois arquivos e diga qual é qual (o layout de cada um é
       diferente e o nome muda a cada exportação) — sempre um deles é o
-      Tramitador, e o outro é o Integral ou a Saída do novo Avanço. Ela
+      Tramitador, e o outro é o Integral, a Saída ou o relatório Tramitado
+      gerado no portal do novo Avanço (mesmo layout "Notas Processadas" do
+      Tramitador, comparado nota a nota pela Chave de Acesso). Ela
       cruza os dois e mostra só os cupons/notas que não batem: os que
       faltam de um lado, os que estão com status diferente no Tramitador
       (cancelada, rejeitada, etc.) e os que têm valor divergente.
@@ -52,6 +54,7 @@
       <select id="tipo1">
         <option value="integral">É do Integral</option>
         <option value="saida">É da Saída (novo Avanço)</option>
+        <option value="novoavanco">É do Tramitado (novo Avanço)</option>
         <option value="tramitador">É do Tramitador</option>
       </select>
     </div>
@@ -65,6 +68,7 @@
         <option value="tramitador">É do Tramitador</option>
         <option value="integral">É do Integral</option>
         <option value="saida">É da Saída (novo Avanço)</option>
+        <option value="novoavanco">É do Tramitado (novo Avanço)</option>
       </select>
     </div>
   </fieldset>

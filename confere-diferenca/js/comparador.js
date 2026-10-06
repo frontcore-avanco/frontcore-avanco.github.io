@@ -170,11 +170,11 @@ const SITUACOES_VALIDAS = new Set(["AUTORIZADA", "AUTORIZADA FORA DO PRAZO"]);
  *   diferentes — indexar só por NNF (como o `porNnf` faz) derrubaria
  *   silenciosamente um documento real sempre que dois caixas emitissem
  *   o mesmo número. */
-export function parseTramitador(rows) {
+export function parseTramitador(rows, rotulo = "Tramitador") {
   const headerIdx = acharLinhaCabecalho(rows, "nnf");
   if (headerIdx === -1) {
     throw new Error(
-      'Não encontrei o cabeçalho do Tramitador (esperava a coluna "NNF" na primeira posição). Confirma se esse é mesmo o relatório do Tramitador?'
+      `Não encontrei o cabeçalho do relatório ${rotulo} (esperava a coluna "NNF" na primeira posição, depois das linhas de título). Confirma se esse é mesmo o relatório "Notas Processadas"?`
     );
   }
   const header = rows[headerIdx];
@@ -189,11 +189,11 @@ export function parseTramitador(rows) {
   const colDataEmissao = acharColuna(header, "Data Emissão", "Data Emissao");
 
   if (colNnf === -1) {
-    throw new Error('Não encontrei a coluna "NNF" no arquivo do Tramitador.');
+    throw new Error(`Não encontrei a coluna "NNF" no arquivo ${rotulo}.`);
   }
   if (colChave === -1) {
     throw new Error(
-      'Não encontrei a coluna "Chave Acesso" no arquivo do Tramitador — preciso dela pra saber se o documento é NF-e ou NFC-e.'
+      `Não encontrei a coluna "Chave Acesso" no arquivo ${rotulo} — preciso dela pra saber se o documento é NF-e ou NFC-e.`
     );
   }
 
@@ -382,6 +382,100 @@ export function compararSaidaTramitador(saida, tramitadorPorChave) {
       nfce: doc.nnf,
       tipo: "Não encontrado na Saída",
       detalhe: "Está autorizada no Tramitador, mas esse documento não aparece na planilha de Saída.",
+      valorOrigem: null,
+      valorTramitador: doc.valor,
+      situacaoTramitador: doc.situacao,
+      docum: doc.docPdv,
+      caixa: doc.serie,
+      data: doc.dataEmissao,
+      hora: null,
+    });
+  }
+
+  diffs.sort((a, b) => Number(a.nfce) - Number(b.nfce));
+  return diffs;
+}
+
+/** Identifica o layout de uma planilha pela linha de cabeçalho (o relatório
+ * "Notas Processadas" tem algumas linhas de título antes do cabeçalho).
+ * Devolve "integral", "saida", "notas-processadas" ou null. */
+export function detectarLayout(rows) {
+  const limite = Math.min(rows.length, 30);
+  for (let i = 0; i < limite; i++) {
+    const primeira = (rows[i]?.[0] ?? "").toString().trim().toLowerCase();
+    if (primeira === "nnf") return "notas-processadas";
+    if (primeira === "lj") return "integral";
+    if (primeira === "numero_nota") return "saida";
+  }
+  return null;
+}
+
+/** Cruza o relatório "Notas Processadas" gerado no portal do novo Avanço
+ * (mesmo layout do Tramitador) com o do Tramitador, pela Chave de Acesso.
+ * Os dois lados têm situação e valor, então a comparação é nos dois
+ * sentidos. Recebe os dois índices `porChave` de `parseTramitador`. */
+export function compararNovoAvancoTramitador(novoAvanco, tramitadorPorChave) {
+  const diffs = [];
+  const vistos = new Set();
+
+  for (const [chave, nova] of novoAvanco) {
+    vistos.add(chave);
+    const doc = tramitadorPorChave.get(chave);
+
+    if (!doc) {
+      diffs.push({
+        nfce: nova.nnf,
+        tipo: "Não encontrado no Tramitador",
+        detalhe: `Está no novo Avanço (${nova.situacao || "sem situação"}), mas não aparece no relatório do Tramitador.`,
+        valorOrigem: nova.valor,
+        valorTramitador: null,
+        situacaoTramitador: null,
+        docum: nova.docPdv,
+        caixa: nova.serie,
+        data: nova.dataEmissao,
+        hora: null,
+      });
+      continue;
+    }
+
+    if (nova.situacao !== doc.situacao) {
+      diffs.push({
+        nfce: nova.nnf,
+        tipo: "Situação diferente",
+        detalhe: `novo Avanço: ${nova.situacao || "—"} · Tramitador: ${doc.situacao || "—"}`,
+        valorOrigem: nova.valor,
+        valorTramitador: doc.valor,
+        situacaoTramitador: doc.situacao,
+        docum: doc.docPdv ?? nova.docPdv,
+        caixa: doc.serie ?? nova.serie,
+        data: nova.dataEmissao,
+        hora: null,
+      });
+      continue;
+    }
+
+    if (SITUACOES_VALIDAS.has(nova.situacao) && nova.valor != null && doc.valor != null && Math.abs(nova.valor - doc.valor) > TOLERANCIA_VALOR) {
+      diffs.push({
+        nfce: nova.nnf,
+        tipo: "Valor diferente",
+        detalhe: `novo Avanço: R$ ${nova.valor.toFixed(2)} · Tramitador: R$ ${doc.valor.toFixed(2)}`,
+        valorOrigem: nova.valor,
+        valorTramitador: doc.valor,
+        situacaoTramitador: doc.situacao,
+        docum: doc.docPdv ?? nova.docPdv,
+        caixa: doc.serie ?? nova.serie,
+        data: nova.dataEmissao,
+        hora: null,
+      });
+    }
+  }
+
+  for (const [chave, doc] of tramitadorPorChave) {
+    if (vistos.has(chave)) continue;
+    diffs.push({
+      nfce: doc.nnf,
+      tipo: "Não encontrado no novo Avanço",
+      detalhe: `Está no Tramitador (${doc.situacao || "sem situação"}), mas não aparece no relatório do novo Avanço.`,
       valorOrigem: null,
       valorTramitador: doc.valor,
       situacaoTramitador: doc.situacao,

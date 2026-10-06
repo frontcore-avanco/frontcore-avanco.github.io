@@ -13,10 +13,21 @@ import {
   parseTramitador,
   compararIntegralTramitador,
   compararSaidaTramitador,
+  compararNovoAvancoTramitador,
+  detectarLayout,
 } from "./comparador.js";
 import { saveCsv } from "./save-csv.js";
 
-const ORIGEM_LABEL = { integral: "Integral", saida: "Saída" };
+const ORIGEM_LABEL = { integral: "Integral", saida: "Saída", novoavanco: "novo Avanço" };
+const NOME_TIPO = {
+  integral: "do Integral",
+  saida: "da Saída (novo Avanço)",
+  tramitador: "do Tramitador",
+  novoavanco: "do Tramitado (novo Avanço)",
+};
+// qual layout cada papel espera (o Tramitador e o Tramitado do novo Avanço
+// usam o mesmo relatório "Notas Processadas")
+const LAYOUT_DO_TIPO = { integral: "integral", saida: "saida", tramitador: "notas-processadas", novoavanco: "notas-processadas" };
 
 const input1 = document.getElementById("arquivo1");
 const input2 = document.getElementById("arquivo2");
@@ -65,9 +76,9 @@ btnComparar.addEventListener("click", async () => {
   const roles = [tipo1.value, tipo2.value];
   const temTramitador = roles.includes("tramitador");
   const origemTipo = tipo1.value !== "tramitador" ? tipo1.value : tipo2.value;
-  const origemValida = origemTipo === "integral" || origemTipo === "saida";
+  const origemValida = origemTipo === "integral" || origemTipo === "saida" || origemTipo === "novoavanco";
   if (!temTramitador || tipo1.value === tipo2.value || !origemValida) {
-    mostrarStatus("Selecione um arquivo do Tramitador e outro do Integral ou da Saída (novo Avanço) — nunca dois do mesmo tipo.");
+    mostrarStatus("Selecione um arquivo do Tramitador e outro do Integral, da Saída ou do Tramitado (novo Avanço) — nunca dois do mesmo tipo.");
     return;
   }
 
@@ -85,9 +96,31 @@ btnComparar.addEventListener("click", async () => {
       lerLinhas(arquivoTramitador),
     ]);
 
+    // confere se cada arquivo tem o layout do papel escolhido (o nome muda a
+    // cada exportação, então o jeito de saber é olhar o cabeçalho)
+    for (const [linhas, tipo, arq] of [
+      [linhasOrigem, origemTipo, arquivoOrigem],
+      [linhasTramitador, "tramitador", arquivoTramitador],
+    ]) {
+      const layout = detectarLayout(linhas);
+      if (layout && layout !== LAYOUT_DO_TIPO[tipo]) {
+        const sugestao =
+          layout === "notas-processadas"
+            ? 'o relatório "Notas Processadas" — marque-o como "do Tramitador" ou "do Tramitado (novo Avanço)"'
+            : layout === "integral"
+            ? 'o do Integral — marque-o como "do Integral"'
+            : 'a Saída do novo Avanço — marque-a como "da Saída (novo Avanço)"';
+        throw new Error(`O arquivo "${arq.name}" está marcado como ${NOME_TIPO[tipo]}, mas o conteúdo parece ser ${sugestao}.`);
+      }
+    }
+
     const tramitador = parseTramitador(linhasTramitador);
     let origem, diffs, totalTramitador;
-    if (origemTipo === "integral") {
+    if (origemTipo === "novoavanco") {
+      origem = parseTramitador(linhasOrigem, "do novo Avanço").porChave;
+      diffs = compararNovoAvancoTramitador(origem, tramitador.porChave);
+      totalTramitador = tramitador.porChave.size;
+    } else if (origemTipo === "integral") {
       origem = parseIntegral(linhasOrigem);
       diffs = compararIntegralTramitador(origem, tramitador.porNnf);
       totalTramitador = tramitador.porNnf.size;
@@ -111,9 +144,10 @@ btnComparar.addEventListener("click", async () => {
 function renderResultado(diffs, totalOrigem, totalTramitador, origemTipo) {
   const label = ORIGEM_LABEL[origemTipo];
   document.getElementById("th-valor-origem").textContent = `Valor ${label}`;
+  const onde = origemTipo === "novoavanco" ? `${totalOrigem} documentos no novo Avanço` : `${totalOrigem} cupons na ${label}`;
   resumo.textContent = diffs.length
-    ? `${totalOrigem} cupons na ${label} · ${totalTramitador} no Tramitador · ${diffs.length} diferença(s) encontrada(s).`
-    : `${totalOrigem} cupons na ${label} · ${totalTramitador} no Tramitador · nenhuma diferença encontrada — está tudo batendo.`;
+    ? `${onde} · ${totalTramitador} no Tramitador · ${diffs.length} diferença(s) encontrada(s).`
+    : `${onde} · ${totalTramitador} no Tramitador · nenhuma diferença encontrada — está tudo batendo.`;
 
   tabelaBody.innerHTML = "";
   tabelaWrap.hidden = diffs.length === 0;
