@@ -8,6 +8,7 @@ import { icone } from "./icones.js";
 import { MANUALS } from "../assets/js/manuals-data.js";
 import { searchManuals } from "../assets/js/help-search.js";
 import { USUARIOS } from "../assets/js/usuarios.js";
+import { iniciarPaineis } from "./paineis.js";
 
 const $ = (id) => document.getElementById(id);
 
@@ -193,14 +194,10 @@ function painel({ id, titulo, iconeTitulo, extra = "", corpo, aberto }) {
   );
 }
 
-function painelEmDesenvolvimento(id, titulo, iconeTitulo) {
-  return painel({
-    id,
-    titulo,
-    iconeTitulo,
-    aberto: false,
-    corpo: `<p class="em-dev"><span class="selo selo-breve">Em desenvolvimento</span>Esta área ainda está sendo construída.</p>`,
-  });
+// Painéis alimentados pela planilha: nascem com "Carregando..." e o
+// paineis.js preenche o corpo depois.
+function painelDePlanilha(id, titulo, iconeTitulo, aberto = false) {
+  return painel({ id, titulo, iconeTitulo, aberto, corpo: `<p class="vazio-painel">Carregando...</p>` });
 }
 
 function montarDireita() {
@@ -220,10 +217,10 @@ function montarDireita() {
       aberto: true,
       corpo: `<ul class="lista-links">${LINKS.map((l) => `<li>${itemHtml(l, "link-item")}</li>`).join("")}</ul>`,
     }) +
-    painelEmDesenvolvimento("agenda", "Agenda da Equipe", "calendar") +
-    painelEmDesenvolvimento("okr", "OKR", "target") +
-    painelEmDesenvolvimento("novos-manuais", "Novos manuais incluídos", "book-open") +
-    painelEmDesenvolvimento("ranking", "Ranking", "trophy") +
+    painelDePlanilha("agenda", "Agenda da Equipe", "calendar") +
+    painelDePlanilha("okr", "OKR", "target", true) +
+    painelDePlanilha("novos-manuais", "Novos manuais incluídos", "book-open") +
+    painelDePlanilha("ranking", "Ranking", "trophy") +
     painel({
       id: "ajuda",
       titulo: "Ajuda e Suporte",
@@ -479,6 +476,7 @@ montarHero();
 montarFerramentas();
 montarRecursos();
 montarDireita();
+iniciarPaineis();
 ligarBusca();
 ligarPopover("btn-sino", "pop-sino");
 ligarPopover("btn-usuario", "pop-usuario");
