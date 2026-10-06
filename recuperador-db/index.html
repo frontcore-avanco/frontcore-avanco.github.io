@@ -30,7 +30,14 @@
 
 <main>
   <section class="intro">
-    <span class="status-pill">Disponível</span>
+    <span class="status-pill status-beta">Beta · em homologação</span>
+    <p class="aviso-beta">
+      <strong>Versão de testes.</strong> A recuperação foi validada com um
+      banco de exemplo do SAT/CF-e, mas o <strong>banco corrigido ainda não foi
+      testado no PDV/SAT real</strong> e as regras específicas de cada banco
+      ainda estão em definição. Teste o arquivo gerado numa máquina de
+      homologação antes de usá-lo em produção e guarde sempre o original.
+    </p>
     <p>
       Escolha o banco com problema (<strong>frenteavanco.db</strong> ou
       <strong>SatCFE.db</strong>). A ferramenta identifica qual é, copia tudo
@@ -49,6 +56,15 @@
   <details class="ajuda" id="ajuda">
     <summary>Ajuda / Como utilizar</summary>
     <div class="ajuda-corpo">
+      <h3>Versão BETA (em homologação)</h3>
+      <p>
+        Esta ferramenta está em teste. Ela ainda não foi conferida com todos os
+        bancos reais, e o banco corrigido ainda não foi testado dentro do
+        PDV/SAT. Use como apoio ao suporte: valide o resultado antes de
+        substituir qualquer arquivo em produção e relate qualquer comportamento
+        estranho junto com o registro (.txt) gerado pela ferramenta.
+      </p>
+
       <h3>Quando usar</h3>
       <p>
         Quando o PDV ou o SAT acusa <code>database disk image is malformed</code>
@@ -148,6 +164,7 @@
       <button type="button" class="btn btn-primary" id="btn-salvar">Salvar banco corrigido</button>
       <span class="info" id="info-salvar"></span>
     </div>
+    <p class="dica">BETA: antes de colocar o arquivo em produção, teste-o numa máquina de homologação.</p>
   </fieldset>
 
   <section class="registro">

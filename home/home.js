@@ -65,7 +65,8 @@ function atualizarRelogio() {
 
 // ---- itens (menu lateral, links, ajuda) ----------------------------------------
 function itemHtml(item, classe) {
-  const conteudo = `${icone(item.icone)}<span class="item-texto">${item.titulo}</span>`;
+  const beta = item.status === "beta" ? '<span class="tag-beta">Beta</span>' : "";
+  const conteudo = `${icone(item.icone)}<span class="item-texto">${item.titulo}</span>${beta}`;
   if (item.acao) return `<button type="button" class="${classe}" data-acao="${item.acao}">${conteudo}</button>`;
   const externo = ehExterno(item.href);
   const abrirFora = externo ? ' target="_blank" rel="noopener noreferrer"' : "";
@@ -100,8 +101,13 @@ function montarHero() {
 
 // ---- cards -----------------------------------------------------------------------------------
 function cardHtml(item) {
-  const breve = item.status === "breve";
-  const selo = `<span class="selo ${breve ? "selo-breve" : "selo-disponivel"}">${breve ? "Em breve" : "Disponível"}</span>`;
+  const SELOS = {
+    breve: ["selo-breve", "Em breve"],
+    beta: ["selo-beta", "Beta · homologação"],
+    disponivel: ["selo-disponivel", "Disponível"],
+  };
+  const [classeSelo, textoSelo] = SELOS[item.status] || SELOS.disponivel;
+  const selo = `<span class="selo ${classeSelo}">${textoSelo}</span>`;
   const corpo =
     `<span class="card-icone cor-${item.cor}">${icone(item.icone)}</span>` +
     `<span class="card-corpo">${selo}<h3>${item.titulo}</h3><p>${item.desc}</p>` +
@@ -152,7 +158,7 @@ function definirStatus(id, valor, tom) {
 async function verificarStatus() {
   definirStatus("acesso", USUARIOS.length ? "OK" : "Sem contas", USUARIOS.length ? "ok" : "alerta");
 
-  const disponiveis = FERRAMENTAS.filter((f) => f.status === "disponivel");
+  const disponiveis = FERRAMENTAS.filter((f) => f.status !== "breve");
   const respostas = await Promise.all(
     disponiveis.map((f) =>
       fetch(f.href, { method: "HEAD", cache: "no-store" })
@@ -164,16 +170,79 @@ async function verificarStatus() {
   definirStatus("ferramentas", falhas ? `${falhas} com falha` : "OK", falhas ? "alerta" : "ok");
 }
 
+// Cada painel é um <details>: clicar no título ou na seta abre/fecha. O que o
+// usuário deixou aberto fica lembrado neste navegador (só conveniência).
+const CHAVE_PAINEIS = "frontcore_paineis";
+
+function lerPaineisSalvos() {
+  try {
+    return JSON.parse(localStorage.getItem(CHAVE_PAINEIS)) || {};
+  } catch {
+    return {};
+  }
+}
+
+function painel({ id, titulo, iconeTitulo, extra = "", corpo, aberto }) {
+  const salvo = lerPaineisSalvos()[id];
+  const abrir = salvo === undefined ? aberto : salvo;
+  return (
+    `<details class="painel" data-painel="${id}"${abrir ? " open" : ""}>` +
+    `<summary class="painel-topo"><h2>${iconeTitulo ? icone(iconeTitulo, "painel-icone-esq") : ""}${titulo}</h2>` +
+    `${extra}<span class="painel-seta">${icone("chevron-down")}</span></summary>` +
+    `<div class="painel-corpo">${corpo}</div></details>`
+  );
+}
+
+function painelEmDesenvolvimento(id, titulo, iconeTitulo) {
+  return painel({
+    id,
+    titulo,
+    iconeTitulo,
+    aberto: false,
+    corpo: `<p class="em-dev"><span class="selo selo-breve">Em desenvolvimento</span>Esta área ainda está sendo construída.</p>`,
+  });
+}
+
 function montarDireita() {
   $("direita").innerHTML =
-    `<section class="painel"><header class="painel-topo"><h2>Status do Sistema</h2>` +
-    `<span class="online"><span class="ponto"></span>Online</span></header>` +
-    `<ul class="lista-status">${STATUS_INICIAL.map(linhaStatus).join("")}</ul></section>` +
+    painel({
+      id: "status",
+      titulo: "Status do Sistema",
+      extra: `<span class="online"><span class="ponto"></span>Online</span>`,
+      aberto: true,
+      corpo: `<ul class="lista-status">${STATUS_INICIAL.map(linhaStatus).join("")}</ul>`,
+    }) +
     painelSefaz() +
-    `<section class="painel"><header class="painel-topo"><h2>Links Rápidos</h2>${icone("external", "painel-icone")}</header>` +
-    `<ul class="lista-links">${LINKS.map((l) => `<li>${itemHtml(l, "link-item")}</li>`).join("")}</ul></section>` +
-    `<section class="painel"><header class="painel-topo"><h2>${icone("help-circle", "painel-icone-esq")}Ajuda e Suporte</h2></header>` +
-    `<ul class="lista-links">${AJUDA.map((a) => `<li>${itemHtml(a, "link-item")}</li>`).join("")}</ul></section>`;
+    painel({
+      id: "links",
+      titulo: "Links Rápidos",
+      iconeTitulo: "external",
+      aberto: true,
+      corpo: `<ul class="lista-links">${LINKS.map((l) => `<li>${itemHtml(l, "link-item")}</li>`).join("")}</ul>`,
+    }) +
+    painelEmDesenvolvimento("agenda", "Agenda da Equipe", "calendar") +
+    painelEmDesenvolvimento("okr", "OKR", "target") +
+    painelEmDesenvolvimento("novos-manuais", "Novos manuais incluídos", "book-open") +
+    painelEmDesenvolvimento("ranking", "Ranking", "trophy") +
+    painel({
+      id: "ajuda",
+      titulo: "Ajuda e Suporte",
+      iconeTitulo: "help-circle",
+      aberto: false,
+      corpo: `<ul class="lista-links">${AJUDA.map((a) => `<li>${itemHtml(a, "link-item")}</li>`).join("")}</ul>`,
+    });
+
+  $("direita").addEventListener("toggle", (e) => {
+    const el = e.target;
+    if (!el.dataset || !el.dataset.painel) return;
+    const salvos = lerPaineisSalvos();
+    salvos[el.dataset.painel] = el.open;
+    try {
+      localStorage.setItem(CHAVE_PAINEIS, JSON.stringify(salvos));
+    } catch {
+      /* sem armazenamento: o painel só não fica lembrado */
+    }
+  }, true);
 }
 
 // ---- SEFAZ MG ---------------------------------------------------------------------------
@@ -197,14 +266,17 @@ function painelSefaz() {
   const linha = (id, nome) =>
     `<li data-sefaz="${id}"><span class="semaforo tom-cinza"></span><span class="sefaz-doc">${nome}</span>` +
     `<span class="sefaz-estado">Verificando...</span></li>`;
-  return (
-    `<section class="painel" id="painel-sefaz"><header class="painel-topo"><h2>SEFAZ MG</h2>` +
-    `<span class="sefaz-hora" id="sefaz-hora"></span></header>` +
-    `<ul class="lista-sefaz">${linha("nfce", "NFC-e")}${linha("nfe", "NF-e")}</ul>` +
-    `<p class="sefaz-rodape">Monitor independente, não é o comunicado oficial da SEFAZ. ` +
-    `Conferir: <a href="https://monitor.zorte.com.br/nfce" target="_blank" rel="noopener noreferrer">Zorte</a> · ` +
-    `<a href="https://monitor.tecnospeed.com.br/?filter-doc=nfce&filter-uf=mg" target="_blank" rel="noopener noreferrer">Tecnospeed</a></p></section>`
-  );
+  return painel({
+    id: "sefaz",
+    titulo: "SEFAZ MG",
+    extra: `<span class="sefaz-hora" id="sefaz-hora"></span>`,
+    aberto: true,
+    corpo:
+      `<ul class="lista-sefaz">${linha("nfce", "NFC-e")}${linha("nfe", "NF-e")}</ul>` +
+      `<p class="sefaz-rodape">Monitor independente, não é o comunicado oficial da SEFAZ. ` +
+      `Conferir: <a href="https://monitor.zorte.com.br/nfce" target="_blank" rel="noopener noreferrer">Zorte</a> · ` +
+      `<a href="https://monitor.tecnospeed.com.br/?filter-doc=nfce&filter-uf=mg" target="_blank" rel="noopener noreferrer">Tecnospeed</a></p>`,
+  });
 }
 
 function definirSefaz(id, texto, tom) {

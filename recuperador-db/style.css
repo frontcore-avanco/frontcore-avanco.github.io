@@ -62,6 +62,18 @@ header.topbar {
   text-transform: uppercase;
 }
 
+.status-pill.status-beta { background: #ffe9a8; color: #6b4a00; }
+.intro .aviso-beta {
+  margin: var(--space-m) 0 0;
+  padding: var(--space-m) var(--space-l);
+  border-radius: 12px;
+  border: 1px solid #e6c35c;
+  background: #fff8e1;
+  color: #5c4300;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
 main {
   max-width: 1100px;
   margin: 0 auto;

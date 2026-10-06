@@ -60,7 +60,7 @@ export const FERRAMENTAS = [
     href: "../recuperador-db/",
     icone: "database",
     cor: "azul",
-    status: "disponivel",
+    status: "beta",
   },
   {
     id: "painel-ana",
