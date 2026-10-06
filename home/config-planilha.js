@@ -17,7 +17,7 @@ export const PLANILHA = {
   ranking: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ9KoYI_TmKQjHBcQJB_FBVz3eEKNfOdB-G0IsocQ21nCTcvbqPVtL4Q-LjQk9M_j5bKmoffDodwVa0/pub?gid=1059556581&single=true&output=csv",
   okr: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ9KoYI_TmKQjHBcQJB_FBVz3eEKNfOdB-G0IsocQ21nCTcvbqPVtL4Q-LjQk9M_j5bKmoffDodwVa0/pub?gid=1934408522&single=true&output=csv",
   agenda: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ9KoYI_TmKQjHBcQJB_FBVz3eEKNfOdB-G0IsocQ21nCTcvbqPVtL4Q-LjQk9M_j5bKmoffDodwVa0/pub?gid=1285926742&single=true&output=csv",
-  notificacoes: "",
+  notificacoes: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ9KoYI_TmKQjHBcQJB_FBVz3eEKNfOdB-G0IsocQ21nCTcvbqPVtL4Q-LjQk9M_j5bKmoffDodwVa0/pub?gid=1518233172&single=true&output=csv",
 };
 
 // de quanto em quanto tempo a home relê a planilha (o Google também guarda
