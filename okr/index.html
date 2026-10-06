@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="utf-8">
+<script>
+  // Portão simples: se essa aba não passou pelo login, volta pro início.
+  // É só uma barreira de navegação (site estático, sem servidor) — não
+  // protege nada de quem souber contorná-la.
+  if (!sessionStorage.getItem("frontcore_token")) location.replace("../");
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OKR da Equipe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@400;600;700;900&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/theme.css">
+<link rel="stylesheet" href="../assets/help-widget.css">
+<link rel="stylesheet" href="../assets/pagina-simples.css">
+<link rel="stylesheet" href="../assets/dados-paineis.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="back" href="../home/">← FrontCore</a>
+    <h1>OKR da Equipe</h1>
+    <span class="subtitle">Objetivos e resultados-chave do suporte</span>
+  </div>
+</header>
+
+<main>
+  <div class="pd-cartoes" id="cartoes" aria-live="polite"></div>
+
+  <section class="bloco">
+    <h2>Objetivos e resultados-chave</h2>
+    <div id="okr">Carregando...</div>
+  </section>
+
+  <p class="pd-aviso">
+    Os números vêm da planilha de OKR mantida pelo suporte. A edição direta
+    por aqui será liberada junto com o servidor da Avanço; até lá, a
+    atualização é feita na planilha e aparece em alguns minutos.
+  </p>
+</main>
+
+<p class="footnote"><a href="../home/">← Voltar ao FrontCore</a></p>
+
+<script type="module" src="okr.js"></script>
+<script type="module" src="../assets/js/help-widget.js"></script>
+</body>
+</html>

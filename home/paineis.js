@@ -5,20 +5,11 @@
 // Tudo que vem da planilha é escapado antes de ir pra tela.
 // -----------------------------------------------------------------------
 import { PLANILHA, RELER_A_CADA_MIN } from "./config-planilha.js";
-import { lerAba, pegar, numero, dataDe, linkSeguro, normalizarChave, mesmoSite } from "./planilha.js";
-import { OKR_INICIAL } from "./okr-inicial.js";
+import { lerAba, pegar, dataDe, linkSeguro, normalizarChave, mesmoSite } from "./planilha.js";
+import { esc, rodapeFonte, linhasOkr, htmlOkrResumo, periodoDoRanking, htmlRankingTop } from "./render-dados.js";
 
-const esc = (t) => String(t ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
-const fmtNum = (n) => n.toLocaleString("pt-BR", { maximumFractionDigits: 2 });
 const hhmm = (ts) => new Date(ts).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 const corpo = (id) => document.querySelector(`[data-painel="${id}"] .painel-corpo`);
-
-function rodapeFonte(res, textoVazio) {
-  if (res.estado === "ok") return `<p class="fonte">Planilha lida às ${hhmm(res.lidoEm)}.</p>`;
-  if (res.estado === "cache") return `<p class="fonte fonte-alerta">Sem acesso à planilha agora; mostrando a última leitura (${new Date(res.lidoEm).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })}).</p>`;
-  if (res.estado === "erro") return `<p class="fonte fonte-alerta">Não foi possível ler a planilha (${esc(res.erro)}).</p>`;
-  return `<p class="fonte">${textoVazio}</p>`;
-}
 
 /** Site de fora abre em aba nova; o próprio FrontCore abre na mesma aba pra
  * não perder o login (a sessão vale só dentro da aba). */
@@ -26,78 +17,21 @@ function abrirFora(link) {
   return /^https?:/i.test(link) && !mesmoSite(link) ? ' target="_blank" rel="noopener noreferrer"' : "";
 }
 
-// ---- OKR ---------------------------------------------------------------------------
-function faixaProgresso(r) {
-  if (r >= 1) return "verde";
-  if (r >= 0.7) return "amarelo";
-  return "laranja";
-}
-
-function htmlKr(l) {
-  const texto = pegar(l, "resultado");
-  const meta = pegar(l, "meta");
-  const atual = pegar(l, "atual");
-  const un = pegar(l, "unidade");
-  const nMeta = numero(meta);
-  const nAtual = numero(atual);
-  const sufixo = un && un !== "%" ? ` ${esc(un)}` : un === "%" ? "%" : "";
-  const notas = [pegar(l, "observ"), pegar(l, "prazo") && `Prazo: ${pegar(l, "prazo")}`].filter(Boolean).map(esc).join(" · ");
-
-  let valor;
-  let barra = "";
-  if (nMeta !== null && nAtual !== null && nMeta > 0) {
-    const r = nAtual / nMeta;
-    valor = `${fmtNum(nAtual)}${sufixo} <span>de ${fmtNum(nMeta)}${sufixo}</span>`;
-    barra = `<div class="kr-barra" role="progressbar" aria-valuenow="${Math.round(Math.min(r, 1) * 100)}" aria-valuemin="0" aria-valuemax="100"><span class="tom-${faixaProgresso(r)}" style="width:${Math.round(Math.min(r, 1) * 100)}%"></span></div>`;
-  } else {
-    const partes = [];
-    if (meta) partes.push(`Meta: ${esc(meta)}${nMeta !== null ? sufixo : un ? ` ${esc(un)}` : ""}`);
-    partes.push(atual ? `Atual: ${esc(atual)}${nAtual !== null ? sufixo : ""}` : "Sem acompanhamento lançado");
-    valor = `<span>${partes.join(" · ")}</span>`;
-  }
-  return `<li class="kr"><p class="kr-texto">${esc(texto)}</p><p class="kr-valor">${valor}</p>${barra}${notas ? `<p class="kr-nota">${notas}</p>` : ""}</li>`;
-}
-
+// ---- OKR (só o resumo; o detalhe fica em okr/) ------------------------------------------
 function desenharOkr(res) {
-  const usarInicial = res.estado === "nao-configurado" || res.estado === "erro";
-  const linhas = usarInicial ? OKR_INICIAL : res.linhas;
-  const grupos = new Map();
-  for (const l of linhas) {
-    const obj = pegar(l, "objetivo");
-    if (!pegar(l, "resultado")) continue;
-    if (!grupos.has(obj)) grupos.set(obj, []);
-    grupos.get(obj).push(l);
-  }
-  const html = grupos.size
-    ? [...grupos].map(([obj, krs], i) => `<section class="okr-obj"><h3><span class="okr-num">${i + 1}</span>${esc(obj || "Sem objetivo")}</h3><ul class="krs">${krs.map(htmlKr).join("")}</ul></section>`).join("")
-    : `<p class="vazio-painel">Nenhum OKR na planilha ainda.</p>`;
-  corpo("okr").innerHTML = html + rodapeFonte(res, "Planilha ainda não conectada: exibindo os OKRs iniciais.");
+  corpo("okr").innerHTML =
+    htmlOkrResumo(linhasOkr(res)) +
+    `<p class="ver-mais"><a href="../okr/">Ver OKR completo →</a></p>` +
+    rodapeFonte(res, "Planilha ainda não conectada: exibindo os OKRs iniciais.");
 }
 
-// ---- Ranking ---------------------------------------------------------------------------------
-const INDICADORES = [
-  { campo: ["atend"], titulo: "Maior quantidade de atendimentos", emoji: "🥇", formato: (n) => fmtNum(n) },
-  { campo: ["satisf"], titulo: "Melhor índice de satisfação", emoji: "⭐", formato: (n) => `${fmtNum(n)} ★` },
-  { campo: ["bug"], titulo: "Mais cards de bugs e melhorias", emoji: "🐞", formato: (n) => fmtNum(n) },
-];
-const MEDALHAS = ["🥇", "🥈", "🥉"];
-
+// ---- Ranking (top 3; a tabela completa fica em ranking/) ------------------------------------
 function desenharRanking(res) {
-  const periodo = res.linhas.map((l) => pegar(l, "periodo")).find(Boolean);
-  const blocos = INDICADORES.map((ind) => {
-    const lista = res.linhas
-      .map((l) => ({ nome: pegar(l, "operador", "nome"), valor: numero(pegar(l, ...ind.campo)) }))
-      .filter((x) => x.nome && x.valor !== null)
-      .sort((a, b) => b.valor - a.valor)
-      .slice(0, 3);
-    const itens = lista.length
-      ? lista.map((x, i) => `<li><span class="rk-pos">${MEDALHAS[i]}</span><span class="rk-nome">${esc(x.nome)}</span><span class="rk-valor">${ind.formato(x.valor)}</span></li>`).join("")
-      : `<li class="rk-vazio">Sem dados</li>`;
-    return `<section class="rk-bloco"><h3><span>${ind.emoji}</span>${ind.titulo}</h3><ol class="rk-lista">${itens}</ol></section>`;
-  }).join("");
+  const periodo = periodoDoRanking(res.linhas);
   corpo("ranking").innerHTML =
     (periodo ? `<p class="rk-periodo">Período: ${esc(periodo)}</p>` : "") +
-    (res.linhas.length || res.estado !== "nao-configurado" ? blocos : `<p class="vazio-painel">O ranking será alimentado pela planilha.</p>`) +
+    (res.linhas.length || res.estado !== "nao-configurado" ? htmlRankingTop(res.linhas, 3) : `<p class="vazio-painel">O ranking será alimentado pela planilha.</p>`) +
+    `<p class="ver-mais"><a href="../ranking/">Ver ranking completo →</a></p>` +
     rodapeFonte(res, "Planilha ainda não conectada.");
 }
 

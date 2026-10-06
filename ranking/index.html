@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="utf-8">
+<script>
+  // Portão simples: se essa aba não passou pelo login, volta pro início.
+  // É só uma barreira de navegação (site estático, sem servidor) — não
+  // protege nada de quem souber contorná-la.
+  if (!sessionStorage.getItem("frontcore_token")) location.replace("../");
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ranking de Operadores</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@400;600;700;900&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/theme.css">
+<link rel="stylesheet" href="../assets/help-widget.css">
+<link rel="stylesheet" href="../assets/pagina-simples.css">
+<link rel="stylesheet" href="../assets/dados-paineis.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="back" href="../home/">← FrontCore</a>
+    <h1>Ranking de Operadores</h1>
+    <span class="subtitle" id="periodo">Indicadores individuais do suporte</span>
+  </div>
+</header>
+
+<main>
+  <section class="bloco">
+    <h2>Destaques</h2>
+    <div class="pd-grade-rk" id="top">Carregando...</div>
+  </section>
+
+  <section class="bloco">
+    <h2>Todos os operadores</h2>
+    <div class="pd-tabela-wrap">
+      <table class="pd-tabela" id="tabela">
+        <thead>
+          <tr>
+            <th scope="col" data-campo="nome" aria-sort="none"><button type="button">Operador</button></th>
+            <th scope="col" class="num" data-campo="atend" aria-sort="descending"><button type="button">Atendimentos</button></th>
+            <th scope="col" class="num" data-campo="satisf" aria-sort="none"><button type="button">Satisfação</button></th>
+            <th scope="col" class="num" data-campo="bug" aria-sort="none"><button type="button">Bugs e melhorias</button></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div id="fonte"></div>
+  </section>
+
+  <p class="pd-aviso">
+    Os números vêm da planilha de ranking mantida pelo suporte. A edição
+    direta por aqui será liberada junto com o servidor da Avanço; até lá, a
+    atualização é feita na planilha e aparece em alguns minutos.
+  </p>
+</main>
+
+<p class="footnote"><a href="../home/">← Voltar ao FrontCore</a></p>
+
+<script type="module" src="ranking.js"></script>
+<script type="module" src="../assets/js/help-widget.js"></script>
+</body>
+</html>

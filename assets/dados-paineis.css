@@ -1,0 +1,67 @@
+/* Dados de OKR e Ranking — usado pelos painéis da home e pelas páginas okr/ e ranking/.
+   Usa os tokens de theme.css. */
+
+.vazio-painel { margin: 8px 0 2px; font-size: 12.5px; color: var(--on-surface-variant); }
+.fonte { margin: 10px 0 0; font-size: 11px; color: var(--outline); }
+.fonte-alerta { color: #b45309; }
+.painel-corpo h3 { margin: 0; font-family: var(--font-display); font-size: 13.5px; color: var(--on-surface); }
+
+.okr-obj { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--surface-container-high); }
+.okr-obj:first-child { margin-top: 4px; padding-top: 0; border-top: none; }
+.okr-obj h3 { display: flex; align-items: center; gap: 8px; color: var(--primary); }
+.okr-num { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--primary); color: var(--on-primary); font-size: 11px; flex: none; }
+.krs { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.kr-texto { margin: 0; font-size: 12.5px; line-height: 1.4; color: var(--on-surface); }
+.kr-valor { margin: 2px 0 0; font-size: 13px; font-weight: 700; color: var(--primary); }
+.kr-valor span { font-weight: 400; font-size: 12px; color: var(--on-surface-variant); }
+.kr-barra { height: 7px; margin-top: 5px; border-radius: 999px; background: var(--surface-container-high); overflow: hidden; }
+.kr-barra span { display: block; height: 100%; border-radius: 999px; }
+.kr-nota { margin: 4px 0 0; font-size: 11.5px; color: var(--on-surface-variant); }
+
+.rk-periodo { margin: 4px 0 0; font-size: 11.5px; color: var(--on-surface-variant); }
+.rk-bloco { margin-top: 12px; }
+.rk-bloco h3 { display: flex; align-items: center; gap: 6px; }
+.rk-lista { list-style: none; margin: 4px 0 0; padding: 0; }
+.rk-lista li { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-top: 1px solid var(--surface-container-high); font-size: 13px; }
+.rk-lista li:first-child { border-top: none; }
+.rk-pos { width: 22px; text-align: center; flex: none; }
+.rk-nome { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.rk-valor { font-weight: 700; color: var(--primary); }
+.rk-vazio { color: var(--on-surface-variant); }
+
+
+/* ---- resumo de OKR (painel da home) ---- */
+.rs-lista { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.rs-obj { display: flex; gap: 10px; align-items: flex-start; }
+.rs-corpo { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.rs-linha { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; font-size: 13px; color: var(--on-surface); }
+.rs-pct { font-weight: 700; color: var(--primary); flex: none; }
+.rs-sub { font-size: 11.5px; color: var(--on-surface-variant); }
+.ver-mais { margin: 12px 0 0; font-size: 13px; font-weight: 700; }
+.ver-mais a { color: var(--primary); text-decoration: none; }
+.ver-mais a:hover { text-decoration: underline; }
+
+/* ---- páginas okr/ e ranking/ ---- */
+.pd-cartoes { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-m); }
+.pd-cartao { background: var(--surface-container-lowest); border: 1px solid var(--outline-variant); border-radius: 14px; padding: var(--space-m) var(--space-l); }
+.pd-cartao strong { display: block; font-family: var(--font-display); font-size: 26px; color: var(--primary); line-height: 1.2; }
+.pd-cartao span { font-size: 12.5px; color: var(--on-surface-variant); }
+.pd-aviso { margin: 0; padding: var(--space-m) var(--space-l); border-radius: 12px; border: 1px solid var(--outline-variant); background: var(--surface-container-low); font-size: 13px; line-height: 1.55; color: var(--on-surface-variant); }
+.pd-grade-rk { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--space-l); }
+.pd-grade-rk .rk-bloco { margin-top: 0; }
+.pd-tabela-wrap { overflow-x: auto; border: 1px solid var(--outline-variant); border-radius: 12px; background: var(--surface-container-lowest); }
+.pd-tabela { width: 100%; border-collapse: collapse; font-size: 14px; }
+.pd-tabela th, .pd-tabela td { padding: var(--space-s) var(--space-m); text-align: left; border-bottom: 1px solid var(--outline-variant); }
+.pd-tabela tbody tr:last-child td { border-bottom: none; }
+.pd-tabela th { background: var(--surface-container); font-size: 11.5px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--on-surface-variant); }
+.pd-tabela th button { all: unset; cursor: pointer; display: inline-flex; gap: 4px; align-items: center; }
+.pd-tabela th button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.pd-tabela .num { text-align: right; font-variant-numeric: tabular-nums; }
+.pd-tabela th[aria-sort] button::after { content: "↕"; opacity: 0.4; font-size: 11px; }
+.pd-tabela th[aria-sort="descending"] button::after { content: "↓"; opacity: 1; }
+.pd-tabela th[aria-sort="ascending"] button::after { content: "↑"; opacity: 1; }
+
+/* cores da barra de progresso (a home define as mesmas pro semáforo da SEFAZ) */
+.kr-barra .tom-verde { background: #2fc02f; }
+.kr-barra .tom-amarelo { background: #e5b200; }
+.kr-barra .tom-laranja { background: #f08a00; }

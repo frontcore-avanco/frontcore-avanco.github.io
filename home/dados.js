@@ -100,6 +100,22 @@ export const RECURSOS = [
     cor: "azul",
   },
   {
+    id: "okr",
+    titulo: "OKR da Equipe",
+    desc: "Objetivos e resultados-chave do suporte, com o andamento de cada um.",
+    href: "../okr/",
+    icone: "target",
+    cor: "verde",
+  },
+  {
+    id: "ranking",
+    titulo: "Ranking de Operadores",
+    desc: "Atendimentos, satisfação e cards de bugs e melhorias por operador.",
+    href: "../ranking/",
+    icone: "trophy",
+    cor: "amarelo",
+  },
+  {
     id: "ask",
     titulo: "Ask (Pesquisa inteligente)",
     desc: "Encontre manuais e soluções por assunto (ex.: balança Toledo).",
