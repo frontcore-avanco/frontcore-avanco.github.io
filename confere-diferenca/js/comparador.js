@@ -29,7 +29,11 @@
 function normalizarValor(str) {
   if (str == null || str === "") return null;
   if (typeof str === "number") return str;
-  const limpo = String(str).trim().replace(/\./g, "").replace(",", ".");
+  const t = String(str).trim();
+  // "1.234,56" (formato brasileiro) → ponto é milhar; "7.98" (só ponto, 1 ou 2
+  // casas) → ponto é decimal; "1.234" (3 casas) → milhar.
+  const soPontoDecimal = !t.includes(",") && /^-?\d+\.\d{1,2}$/.test(t);
+  const limpo = soPontoDecimal ? t : t.replace(/\./g, "").replace(",", ".");
   const n = parseFloat(limpo);
   return Number.isNaN(n) ? null : n;
 }
@@ -266,7 +270,7 @@ const TOLERANCIA_VALOR = 0.01;
 
 /** Cruza os dois mapas (por número da NFC-e) e devolve só as diferenças
  * — cupons/notas que não batem entre o Integral e o Tramitador. */
-export function compararIntegralTramitador(integral, tramitador) {
+export function compararIntegralTramitador(integral, tramitador, rotuloOutro = "Tramitador") {
   const diffs = [];
   const vistos = new Set();
 
@@ -278,8 +282,8 @@ export function compararIntegralTramitador(integral, tramitador) {
     if (!doc) {
       diffs.push({
         nfce,
-        tipo: "Não encontrado no Tramitador",
-        detalhe: "Tem venda no Integral, mas essa NFC-e não aparece no relatório do Tramitador.",
+        tipo: `Não encontrado no ${rotuloOutro}`,
+        detalhe: `Tem venda no Integral, mas essa NFC-e não aparece no relatório do ${rotuloOutro}.`,
         valorOrigem: venda.valor,
         valorTramitador: null,
         situacaoTramitador: null,
@@ -294,8 +298,8 @@ export function compararIntegralTramitador(integral, tramitador) {
     if (!SITUACOES_VALIDAS.has(doc.situacao)) {
       diffs.push({
         nfce,
-        tipo: `Situação no Tramitador: ${doc.situacao || "desconhecida"}`,
-        detalhe: `O Integral registra essa venda como concluída, mas no Tramitador ela está como "${doc.situacao}".`,
+        tipo: `Situação no ${rotuloOutro}: ${doc.situacao || "desconhecida"}`,
+        detalhe: `O Integral registra essa venda como concluída, mas no ${rotuloOutro} ela está como "${doc.situacao}".`,
         valorOrigem: venda.valor,
         valorTramitador: doc.valor,
         situacaoTramitador: doc.situacao,
@@ -311,7 +315,7 @@ export function compararIntegralTramitador(integral, tramitador) {
       diffs.push({
         nfce,
         tipo: "Valor diferente",
-        detalhe: `Integral: R$ ${venda.valor.toFixed(2)} · Tramitador: R$ ${doc.valor.toFixed(2)}`,
+        detalhe: `Integral: R$ ${venda.valor.toFixed(2)} · ${rotuloOutro}: R$ ${doc.valor.toFixed(2)}`,
         valorOrigem: venda.valor,
         valorTramitador: doc.valor,
         situacaoTramitador: doc.situacao,
@@ -332,7 +336,7 @@ export function compararIntegralTramitador(integral, tramitador) {
     diffs.push({
       nfce: doc.nnf,
       tipo: "Não encontrado no Integral",
-      detalhe: "Está autorizada no Tramitador, mas essa NFC-e não aparece no Integral.",
+      detalhe: `Está autorizada no ${rotuloOutro}, mas essa NFC-e não aparece no Integral.`,
       valorOrigem: null,
       valorTramitador: doc.valor,
       situacaoTramitador: doc.situacao,
@@ -351,7 +355,7 @@ export function compararIntegralTramitador(integral, tramitador) {
  * completa (ver comentário no topo do arquivo — o número da nota sozinho
  * não é confiável aqui) e devolve só as diferenças. Recebe o índice
  * `porChave` já pronto de `parseTramitador` (não o `porNnf`). */
-export function compararSaidaTramitador(saida, tramitadorPorChave) {
+export function compararSaidaTramitador(saida, tramitadorPorChave, rotuloOutro = "Tramitador") {
   const diffs = [];
   const vistos = new Set();
 
@@ -362,8 +366,8 @@ export function compararSaidaTramitador(saida, tramitadorPorChave) {
     if (!doc) {
       diffs.push({
         nfce: venda.numeroNota,
-        tipo: "Não encontrado no Tramitador",
-        detalhe: "Tem saída registrada no novo Avanço, mas essa nota não aparece no relatório do Tramitador.",
+        tipo: `Não encontrado no ${rotuloOutro}`,
+        detalhe: `Tem saída registrada no novo Avanço, mas essa nota não aparece no relatório do ${rotuloOutro}.`,
         valorOrigem: venda.valor,
         valorTramitador: null,
         situacaoTramitador: null,
@@ -378,8 +382,8 @@ export function compararSaidaTramitador(saida, tramitadorPorChave) {
     if (!SITUACOES_VALIDAS.has(doc.situacao)) {
       diffs.push({
         nfce: venda.numeroNota,
-        tipo: `Situação no Tramitador: ${doc.situacao || "desconhecida"}`,
-        detalhe: `A Saída registra esse documento como concluído, mas no Tramitador ele está como "${doc.situacao}".`,
+        tipo: `Situação no ${rotuloOutro}: ${doc.situacao || "desconhecida"}`,
+        detalhe: `A Saída registra esse documento como concluído, mas no ${rotuloOutro} ele está como "${doc.situacao}".`,
         valorOrigem: venda.valor,
         valorTramitador: doc.valor,
         situacaoTramitador: doc.situacao,
@@ -395,7 +399,7 @@ export function compararSaidaTramitador(saida, tramitadorPorChave) {
       diffs.push({
         nfce: venda.numeroNota,
         tipo: "Valor diferente",
-        detalhe: `Saída: R$ ${venda.valor.toFixed(2)} · Tramitador: R$ ${doc.valor.toFixed(2)}`,
+        detalhe: `Saída: R$ ${venda.valor.toFixed(2)} · ${rotuloOutro}: R$ ${doc.valor.toFixed(2)}`,
         valorOrigem: venda.valor,
         valorTramitador: doc.valor,
         situacaoTramitador: doc.situacao,
@@ -414,7 +418,7 @@ export function compararSaidaTramitador(saida, tramitadorPorChave) {
     diffs.push({
       nfce: doc.nnf,
       tipo: "Não encontrado na Saída",
-      detalhe: "Está autorizada no Tramitador, mas esse documento não aparece na planilha de Saída.",
+      detalhe: `Está autorizada no ${rotuloOutro}, mas esse documento não aparece na planilha de Saída.`,
       valorOrigem: null,
       valorTramitador: doc.valor,
       situacaoTramitador: doc.situacao,
@@ -515,6 +519,85 @@ export function compararNovoAvancoTramitador(novoAvanco, tramitadorPorChave) {
       docum: doc.docPdv,
       caixa: doc.serie,
       data: doc.dataEmissao,
+      hora: null,
+    });
+  }
+
+  diffs.sort((a, b) => Number(a.nfce) - Number(b.nfce));
+  return diffs;
+}
+
+/** Cruza o Integral com a Saída do novo Avanço, sem o Tramitador no meio.
+ * O Integral não tem chave de acesso, então o cruzamento é por caixa +
+ * número (série + número da nota na Saída); se o caixa não bater com a
+ * série, cai pro cruzamento só pelo número. `integral` vem de
+ * `parseIntegral` (chave caixa|número) e `saida` de `parseSaida`. */
+export function compararIntegralSaida(integral, saida) {
+  const saidaSerie = new Map();
+  const saidaNum = new Map();
+  for (const s of saida.values()) {
+    const num = normalizarChave(s.numeroNota);
+    saidaSerie.set(`${normalizarChave(s.serie)}|${num}`, s);
+    saidaNum.set(num, s);
+  }
+
+  let casaSerie = 0;
+  let casaNum = 0;
+  for (const [chave, venda] of integral) {
+    if (saidaSerie.has(chave)) casaSerie++;
+    if (saidaNum.has(venda.nfce)) casaNum++;
+  }
+  const usarSerie = casaSerie >= casaNum;
+  const achar = (chave, venda) => (usarSerie ? saidaSerie.get(chave) : saidaNum.get(venda.nfce));
+
+  const diffs = [];
+  const vistos = new Set();
+  for (const [chave, venda] of integral) {
+    const s = achar(chave, venda);
+    if (!s) {
+      diffs.push({
+        nfce: venda.nfce,
+        tipo: "Não encontrado na Saída",
+        detalhe: "Tem venda no Integral, mas essa nota não aparece na planilha de Saída.",
+        valorOrigem: venda.valor,
+        valorTramitador: null,
+        situacaoTramitador: null,
+        docum: venda.docum,
+        caixa: venda.cx,
+        data: venda.data,
+        hora: venda.hora,
+      });
+      continue;
+    }
+    vistos.add(s);
+    if (venda.valor != null && s.valor != null && Math.abs(venda.valor - s.valor) > TOLERANCIA_VALOR) {
+      diffs.push({
+        nfce: venda.nfce,
+        tipo: "Valor diferente",
+        detalhe: `Integral: R$ ${venda.valor.toFixed(2)} · Saída: R$ ${s.valor.toFixed(2)}`,
+        valorOrigem: venda.valor,
+        valorTramitador: s.valor,
+        situacaoTramitador: s.status,
+        docum: venda.docum,
+        caixa: s.serie ?? venda.cx,
+        data: venda.data,
+        hora: venda.hora,
+      });
+    }
+  }
+
+  for (const s of saida.values()) {
+    if (vistos.has(s)) continue;
+    diffs.push({
+      nfce: s.numeroNota,
+      tipo: "Não encontrado no Integral",
+      detalhe: `Está na Saída (${s.status || "sem status"}), mas essa nota não aparece no Integral.`,
+      valorOrigem: null,
+      valorTramitador: s.valor,
+      situacaoTramitador: s.status,
+      docum: s.numeroNota,
+      caixa: s.serie,
+      data: s.data,
       hora: null,
     });
   }

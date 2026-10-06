@@ -1,9 +1,9 @@
 // -----------------------------------------------------------------------
 // app.js — Confere Diferença. Lê os dois arquivos (papel de cada um
 // escolhido pelo usuário no <select>, já que o nome do arquivo muda a
-// cada exportação) e cruza o Tramitador com a outra planilha escolhida
-// (Integral ou Saída do novo Avanço — nunca as duas de uma vez), mostrando
-// só as diferenças.
+// cada exportação) e cruza os dois — qualquer par de tipos diferentes entre
+// Integral, Saída, Tramitado do novo Avanço e Tramitador —, mostrando só as
+// diferenças.
 // -----------------------------------------------------------------------
 import { readXlsxRows } from "./xlsx-lite.js";
 import { readCsvRows } from "./csv-lite.js";
@@ -14,12 +14,17 @@ import {
   compararIntegralTramitador,
   compararSaidaTramitador,
   compararNovoAvancoTramitador,
+  compararIntegralSaida,
   alinharIntegral,
   detectarLayout,
 } from "./comparador.js";
 import { saveCsv } from "./save-csv.js";
 
-const ORIGEM_LABEL = { integral: "Integral", saida: "Saída", novoavanco: "novo Avanço" };
+// nome de cada tipo de arquivo nas telas e no CSV exportado
+const ROTULO = { integral: "Integral", saida: "Saída", novoavanco: "Tramitado (novo Avanço)", tramitador: "Tramitador" };
+// quando os dois são de tipos diferentes, o "lado da esquerda" da comparação
+// é o primeiro desta lista (só muda a ordem das colunas na tabela)
+const ORDEM = ["integral", "saida", "novoavanco", "tramitador"];
 const NOME_TIPO = {
   integral: "do Integral",
   saida: "da Saída (novo Avanço)",
@@ -65,7 +70,7 @@ async function lerLinhas(file) {
 }
 
 let ultimosDiffs = [];
-let ultimoOrigemTipo = "integral";
+let ultimosRotulos = { a: "Integral", b: "Tramitador" };
 
 btnComparar.addEventListener("click", async () => {
   resultado.hidden = true;
@@ -74,17 +79,17 @@ btnComparar.addEventListener("click", async () => {
     mostrarStatus("Selecione os dois arquivos antes de comparar.");
     return;
   }
-  const roles = [tipo1.value, tipo2.value];
-  const temTramitador = roles.includes("tramitador");
-  const origemTipo = tipo1.value !== "tramitador" ? tipo1.value : tipo2.value;
-  const origemValida = origemTipo === "integral" || origemTipo === "saida" || origemTipo === "novoavanco";
-  if (!temTramitador || tipo1.value === tipo2.value || !origemValida) {
-    mostrarStatus("Selecione um arquivo do Tramitador e outro do Integral, da Saída ou do Tramitado (novo Avanço) — nunca dois do mesmo tipo.");
+  if (tipo1.value === tipo2.value) {
+    mostrarStatus("Escolha dois tipos diferentes (por exemplo Integral e Tramitador, ou Integral e Tramitado do novo Avanço) — não dá pra comparar dois arquivos do mesmo tipo.");
     return;
   }
 
-  const arquivoOrigem = tipo1.value !== "tramitador" ? input1.files[0] : input2.files[0];
-  const arquivoTramitador = tipo1.value === "tramitador" ? input1.files[0] : input2.files[0];
+  // lado A = o que vem primeiro na ordem acima; lado B = o outro
+  const lados = [
+    { tipo: tipo1.value, arquivo: input1.files[0] },
+    { tipo: tipo2.value, arquivo: input2.files[0] },
+  ].sort((x, y) => ORDEM.indexOf(x.tipo) - ORDEM.indexOf(y.tipo));
+  const [A, B] = lados;
 
   btnComparar.disabled = true;
   try {
@@ -92,49 +97,58 @@ btnComparar.addEventListener("click", async () => {
     // cede o controle ao navegador antes do trabalho pesado, pra mensagem acima aparecer
     await new Promise((r) => setTimeout(r, 30));
 
-    const [linhasOrigem, linhasTramitador] = await Promise.all([
-      lerLinhas(arquivoOrigem),
-      lerLinhas(arquivoTramitador),
-    ]);
+    [A.linhas, B.linhas] = await Promise.all([lerLinhas(A.arquivo), lerLinhas(B.arquivo)]);
 
     // confere se cada arquivo tem o layout do papel escolhido (o nome muda a
     // cada exportação, então o jeito de saber é olhar o cabeçalho)
-    for (const [linhas, tipo, arq] of [
-      [linhasOrigem, origemTipo, arquivoOrigem],
-      [linhasTramitador, "tramitador", arquivoTramitador],
-    ]) {
-      const layout = detectarLayout(linhas);
-      if (layout && layout !== LAYOUT_DO_TIPO[tipo]) {
+    for (const lado of lados) {
+      const layout = detectarLayout(lado.linhas);
+      if (layout && layout !== LAYOUT_DO_TIPO[lado.tipo]) {
         const sugestao =
           layout === "notas-processadas"
             ? 'o relatório "Notas Processadas" — marque-o como "do Tramitador" ou "do Tramitado (novo Avanço)"'
             : layout === "integral"
             ? 'o do Integral — marque-o como "do Integral"'
             : 'a Saída do novo Avanço — marque-a como "da Saída (novo Avanço)"';
-        throw new Error(`O arquivo "${arq.name}" está marcado como ${NOME_TIPO[tipo]}, mas o conteúdo parece ser ${sugestao}.`);
+        throw new Error(`O arquivo "${lado.arquivo.name}" está marcado como ${NOME_TIPO[lado.tipo]}, mas o conteúdo parece ser ${sugestao}.`);
       }
     }
 
-    const tramitador = parseTramitador(linhasTramitador);
-    let origem, diffs, totalTramitador;
-    if (origemTipo === "novoavanco") {
-      origem = parseTramitador(linhasOrigem, "do novo Avanço").porChave;
-      diffs = compararNovoAvancoTramitador(origem, tramitador.porChave);
-      totalTramitador = tramitador.porChave.size;
-    } else if (origemTipo === "integral") {
-      origem = parseIntegral(linhasOrigem);
-      const alinhado = alinharIntegral(origem, tramitador);
-      diffs = compararIntegralTramitador(alinhado.integral, alinhado.tramitador);
-      totalTramitador = alinhado.tramitador.size;
+    // lê cada lado pelo layout do seu tipo
+    for (const lado of lados) {
+      if (lado.tipo === "integral") lado.dados = parseIntegral(lado.linhas);
+      else if (lado.tipo === "saida") lado.dados = parseSaida(lado.linhas);
+      else lado.dados = parseTramitador(lado.linhas, lado.tipo === "novoavanco" ? "do novo Avanço" : "Tramitador");
+    }
+
+    const par = `${A.tipo}+${B.tipo}`;
+    let diffs, totalA, totalB;
+    if (A.tipo === "integral" && B.tipo === "saida") {
+      diffs = compararIntegralSaida(A.dados, B.dados);
+      totalA = A.dados.size;
+      totalB = B.dados.size;
+    } else if (A.tipo === "integral") {
+      // Integral × (Tramitador | Tramitado do novo Avanço)
+      const alinhado = alinharIntegral(A.dados, B.dados);
+      diffs = compararIntegralTramitador(alinhado.integral, alinhado.tramitador, ROTULO[B.tipo]);
+      totalA = A.dados.size;
+      totalB = alinhado.tramitador.size;
+    } else if (A.tipo === "saida") {
+      // Saída × (Tramitador | Tramitado do novo Avanço), pela Chave de Acesso
+      diffs = compararSaidaTramitador(A.dados, B.dados.porChave, ROTULO[B.tipo]);
+      totalA = A.dados.size;
+      totalB = B.dados.porChave.size;
+    } else if (par === "novoavanco+tramitador") {
+      diffs = compararNovoAvancoTramitador(A.dados.porChave, B.dados.porChave);
+      totalA = A.dados.porChave.size;
+      totalB = B.dados.porChave.size;
     } else {
-      origem = parseSaida(linhasOrigem);
-      diffs = compararSaidaTramitador(origem, tramitador.porChave);
-      totalTramitador = tramitador.porChave.size;
+      throw new Error("Combinação de tipos não suportada.");
     }
     ultimosDiffs = diffs;
-    ultimoOrigemTipo = origemTipo;
+    ultimosRotulos = { a: ROTULO[A.tipo], b: ROTULO[B.tipo] };
 
-    renderResultado(diffs, origem.size, totalTramitador, origemTipo);
+    renderResultado(diffs, totalA, totalB, ultimosRotulos);
     statusMsg.hidden = true;
   } catch (e) {
     mostrarStatus("Erro: " + e.message);
@@ -143,13 +157,13 @@ btnComparar.addEventListener("click", async () => {
   }
 });
 
-function renderResultado(diffs, totalOrigem, totalTramitador, origemTipo) {
-  const label = ORIGEM_LABEL[origemTipo];
-  document.getElementById("th-valor-origem").textContent = `Valor ${label}`;
-  const onde = origemTipo === "novoavanco" ? `${totalOrigem} documentos no novo Avanço` : `${totalOrigem} cupons na ${label}`;
+function renderResultado(diffs, totalA, totalB, rotulos) {
+  document.getElementById("th-valor-origem").textContent = `Valor ${rotulos.a}`;
+  document.getElementById("th-valor-outro").textContent = `Valor ${rotulos.b}`;
+  const contagem = `${rotulos.a}: ${totalA} · ${rotulos.b}: ${totalB}`;
   resumo.textContent = diffs.length
-    ? `${onde} · ${totalTramitador} no Tramitador · ${diffs.length} diferença(s) encontrada(s).`
-    : `${onde} · ${totalTramitador} no Tramitador · nenhuma diferença encontrada — está tudo batendo.`;
+    ? `${contagem} · ${diffs.length} diferença(s) encontrada(s).`
+    : `${contagem} · nenhuma diferença encontrada — está tudo batendo.`;
 
   tabelaBody.innerHTML = "";
   tabelaWrap.hidden = diffs.length === 0;
@@ -185,7 +199,7 @@ function csvField(value) {
 }
 
 btnExportar.addEventListener("click", async () => {
-  const cabecalho = ["NFCe", "Tipo", "Detalhe", `Valor ${ORIGEM_LABEL[ultimoOrigemTipo]}`, "Valor Tramitador", "Docum/Doc.PDV", "Caixa/Série", "Data"];
+  const cabecalho = ["NFCe", "Tipo", "Detalhe", `Valor ${ultimosRotulos.a}`, `Valor ${ultimosRotulos.b}`, "Docum/Doc.PDV", "Caixa/Série", "Data"];
   const linhas = [cabecalho.map(csvField).join(";")];
   for (const d of ultimosDiffs) {
     linhas.push(
