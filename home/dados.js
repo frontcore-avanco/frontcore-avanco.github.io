@@ -24,7 +24,7 @@ export const FERRAMENTAS = [
     href: "../consulta-ambiente/",
     icone: "building",
     cor: "azul",
-    status: "disponivel",
+    status: "beta",
   },
   {
     id: "xml-para-csv",

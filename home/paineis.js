@@ -5,7 +5,7 @@
 // Tudo que vem da planilha é escapado antes de ir pra tela.
 // -----------------------------------------------------------------------
 import { PLANILHA, RELER_A_CADA_MIN } from "./config-planilha.js";
-import { lerAba, pegar, numero, dataDe, linkSeguro, normalizarChave } from "./planilha.js";
+import { lerAba, pegar, numero, dataDe, linkSeguro, normalizarChave, mesmoSite } from "./planilha.js";
 import { OKR_INICIAL } from "./okr-inicial.js";
 
 const esc = (t) => String(t ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -18,6 +18,12 @@ function rodapeFonte(res, textoVazio) {
   if (res.estado === "cache") return `<p class="fonte fonte-alerta">Sem acesso à planilha agora; mostrando a última leitura (${new Date(res.lidoEm).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })}).</p>`;
   if (res.estado === "erro") return `<p class="fonte fonte-alerta">Não foi possível ler a planilha (${esc(res.erro)}).</p>`;
   return `<p class="fonte">${textoVazio}</p>`;
+}
+
+/** Site de fora abre em aba nova; o próprio FrontCore abre na mesma aba pra
+ * não perder o login (a sessão vale só dentro da aba). */
+function abrirFora(link) {
+  return /^https?:/i.test(link) && !mesmoSite(link) ? ' target="_blank" rel="noopener noreferrer"' : "";
 }
 
 // ---- OKR ---------------------------------------------------------------------------
@@ -109,7 +115,7 @@ function desenharAgenda(res) {
   const itens = eventos
     .map((e) => {
       const ehHoje = e.data.toDateString() === hoje.toDateString();
-      const titulo = e.link ? `<a href="${esc(e.link)}" target="_blank" rel="noopener noreferrer">${esc(e.titulo)}</a>` : esc(e.titulo);
+      const titulo = e.link ? `<a href="${esc(e.link)}"${abrirFora(e.link)}>${esc(e.titulo)}</a>` : esc(e.titulo);
       const sub = [ehHoje ? "Hoje" : "", e.hora, e.tipo].filter(Boolean).map(esc).join(" · ");
       return `<li><span class="ag-data${ehHoje ? " hoje" : ""}"><strong>${String(e.data.getDate()).padStart(2, "0")}</strong>${MESES[e.data.getMonth()]}</span><span class="ag-corpo"><strong>${titulo}</strong>${sub ? `<span>${sub}</span>` : ""}</span></li>`;
     })
@@ -152,8 +158,7 @@ function prepararNotificacoes(linhas) {
 
 function itemNotificacao(n) {
   const dt = n.data ? n.data.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }) : "";
-  const externo = /^https?:/i.test(n.link);
-  const titulo = n.link ? `<a href="${esc(n.link)}"${externo ? ' target="_blank" rel="noopener noreferrer"' : ""}>${esc(n.titulo)}</a>` : esc(n.titulo);
+  const titulo = n.link ? `<a href="${esc(n.link)}"${abrirFora(n.link)}>${esc(n.titulo)}</a>` : esc(n.titulo);
   return `<li><span class="nt-tag nt-${n.cat.id}">${esc(n.cat.rotulo)}</span><span class="nt-titulo">${titulo}</span><span class="nt-data">${dt}</span></li>`;
 }
 

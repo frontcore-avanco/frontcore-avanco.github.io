@@ -21,7 +21,14 @@ function normalizar(s) {
 }
 
 function ehExterno(href) {
-  return /^https?:/i.test(href);
+  // o próprio FrontCore com endereço completo não é "externo": abrir em aba
+  // nova perderia o login (a sessão vale só dentro da aba)
+  try {
+    const u = new URL(href, location.href);
+    return /^https?:$/.test(u.protocol) && u.origin !== location.origin;
+  } catch {
+    return false;
+  }
 }
 
 // ---- ações (itens que não navegam) ----------------------------------------
@@ -266,7 +273,7 @@ function painelSefaz() {
     `<span class="sefaz-estado">Verificando...</span></li>`;
   return painel({
     id: "sefaz",
-    titulo: "SEFAZ MG",
+    titulo: 'SEFAZ MG <span class="tag-beta">Beta · homologação</span>',
     extra: `<span class="sefaz-hora" id="sefaz-hora"></span>`,
     aberto: true,
     corpo:

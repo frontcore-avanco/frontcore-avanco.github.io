@@ -84,6 +84,16 @@ function validarData(a, mes, d) {
   return dt.getFullYear() === a && dt.getMonth() === mes - 1 && dt.getDate() === d ? dt : null;
 }
 
+/** O link aponta pro próprio FrontCore? (a sessão de login é por aba: abrir
+ * o próprio site em aba nova perderia o login.) */
+export function mesmoSite(url) {
+  try {
+    return new URL(url, location.href).origin === location.origin;
+  } catch {
+    return false;
+  }
+}
+
 /** Só deixa passar links http(s) ou caminhos do próprio site. */
 export function linkSeguro(url) {
   const u = String(url ?? "").trim();
