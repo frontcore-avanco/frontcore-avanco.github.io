@@ -358,7 +358,7 @@ button { font: inherit; color: inherit; }
 .painel-topo::marker { content: ""; }
 .painel-topo:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
 .painel[open] > .painel-topo { margin-bottom: 4px; }
-.painel-topo h2 { flex: 1; min-width: 0; margin: 0; display: flex; align-items: center; gap: 8px; font-family: var(--font-display); font-size: 17px; color: var(--primary); }
+.painel-topo h2 { flex: 1 0 auto; margin: 0; display: flex; align-items: center; gap: 8px; font-family: var(--font-display); font-size: 17px; color: var(--primary); }
 .painel-icone { color: var(--primary); width: 20px; height: 20px; }
 .painel-icone-esq { width: 22px; height: 22px; }
 .painel-seta { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; color: var(--primary); background: var(--surface-container); flex: none; transition: transform 0.2s ease, background-color 0.15s ease; }
