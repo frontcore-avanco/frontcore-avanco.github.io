@@ -65,3 +65,5 @@
 .kr-barra .tom-verde { background: #2fc02f; }
 .kr-barra .tom-amarelo { background: #e5b200; }
 .kr-barra .tom-laranja { background: #f08a00; }
+
+.pd-beta { margin: 0; padding: var(--space-m) var(--space-l); border-radius: 12px; border: 1px solid #e6c35c; background: #fff8e1; color: #5c4300; font-size: 13px; line-height: 1.55; }

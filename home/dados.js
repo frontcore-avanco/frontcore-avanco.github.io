@@ -106,6 +106,8 @@ export const RECURSOS = [
     href: "../okr/",
     icone: "target",
     cor: "verde",
+    status: "beta",
+    selo: "Beta · em construção",
   },
   {
     id: "ranking",
@@ -114,6 +116,8 @@ export const RECURSOS = [
     href: "../ranking/",
     icone: "trophy",
     cor: "amarelo",
+    status: "beta",
+    selo: "Beta · em construção",
   },
   {
     id: "ask",

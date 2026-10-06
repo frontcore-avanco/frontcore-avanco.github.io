@@ -115,7 +115,7 @@ function cardHtml(item) {
     disponivel: ["selo-disponivel", "Disponível"],
   };
   const [classeSelo, textoSelo] = SELOS[item.status] || SELOS.disponivel;
-  const selo = `<span class="selo ${classeSelo}">${textoSelo}</span>`;
+  const selo = `<span class="selo ${classeSelo}">${item.selo || textoSelo}</span>`;
   const corpo =
     `<span class="card-icone cor-${item.cor}">${icone(item.icone)}</span>` +
     `<span class="card-corpo">${selo}<h3>${item.titulo}</h3><p>${item.desc}</p>` +
@@ -138,7 +138,7 @@ function montarFerramentas() {
 }
 
 function montarRecursos() {
-  $("grade-recursos").innerHTML = RECURSOS.map((r) => cardHtml({ ...r, status: "disponivel" })).join("");
+  $("grade-recursos").innerHTML = RECURSOS.map((r) => cardHtml({ status: "disponivel", ...r })).join("");
 }
 
 // ---- painel da direita -------------------------------------------------------------------
@@ -225,9 +225,9 @@ function montarDireita() {
       corpo: `<ul class="lista-links">${LINKS.map((l) => `<li>${itemHtml(l, "link-item")}</li>`).join("")}</ul>`,
     }) +
     painelDePlanilha("agenda", "Agenda da Equipe", "calendar") +
-    painelDePlanilha("okr", "OKR", "target", true) +
+    painelDePlanilha("okr", 'OKR <span class="tag-beta">Beta · em construção</span>', "target", true) +
     painelDePlanilha("novos-manuais", "Novos manuais incluídos", "book-open") +
-    painelDePlanilha("ranking", "Ranking", "trophy") +
+    painelDePlanilha("ranking", 'Ranking <span class="tag-beta">Beta · em construção</span>', "trophy") +
     painel({
       id: "ajuda",
       titulo: "Ajuda e Suporte",
