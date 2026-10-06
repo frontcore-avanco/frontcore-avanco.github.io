@@ -382,8 +382,9 @@ button { font: inherit; color: inherit; }
 .tom-alerta { color: #b45309; }
 .tom-neutro { color: var(--outline); }
 
-.painel-topo h2 { white-space: nowrap; }
-.sefaz-hora { font-size: 11px; line-height: 1.25; text-align: right; min-width: 0; color: var(--on-surface-variant); }
+.painel-topo h2 { white-space: nowrap; flex-wrap: wrap; row-gap: 2px; }
+.sefaz-hora { margin: 6px 0 0; font-size: 11.5px; color: var(--on-surface-variant); }
+.sefaz-hora:empty { display: none; }
 .lista-sefaz { list-style: none; margin: 0; padding: 0; }
 .lista-sefaz li { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-top: 1px solid var(--surface-container-high); font-size: 13px; }
 .lista-sefaz li:first-child { border-top: none; }

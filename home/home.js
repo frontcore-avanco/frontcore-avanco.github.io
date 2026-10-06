@@ -272,11 +272,11 @@ function painelSefaz() {
     `<span class="sefaz-estado">Verificando...</span></li>`;
   return painel({
     id: "sefaz",
-    titulo: 'SEFAZ MG <span class="tag-ativo">Ativo</span>',
-    extra: `<span class="sefaz-hora" id="sefaz-hora"></span>`,
+    titulo: 'SEFAZ MG <span class="tag-beta">Beta · homologação</span>',
     aberto: true,
     corpo:
       `<ul class="lista-sefaz">${linha("nfce", "NFC-e")}${linha("nfe", "NF-e")}</ul>` +
+      `<p class="sefaz-hora" id="sefaz-hora"></p>` +
       `<p class="sefaz-rodape">Monitor independente, não é o comunicado oficial da SEFAZ. ` +
       `Conferir: <a href="https://monitor.zorte.com.br/nfce" target="_blank" rel="noopener noreferrer">Zorte</a> · ` +
       `<a href="https://monitor.tecnospeed.com.br/?filter-doc=nfce&filter-uf=mg" target="_blank" rel="noopener noreferrer">Tecnospeed</a></p>`,
