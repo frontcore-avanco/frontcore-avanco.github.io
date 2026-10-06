@@ -15,7 +15,7 @@
 // -----------------------------------------------------------------------
 export const PLANILHA = {
   ranking: "",
-  okr: "",
+  okr: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ9KoYI_TmKQjHBcQJB_FBVz3eEKNfOdB-G0IsocQ21nCTcvbqPVtL4Q-LjQk9M_j5bKmoffDodwVa0/pub?gid=1934408522&single=true&output=csv",
   agenda: "",
   notificacoes: "",
 };
