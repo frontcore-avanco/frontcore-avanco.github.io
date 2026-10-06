@@ -348,6 +348,7 @@ button { font: inherit; color: inherit; }
 .selo-disponivel { background: var(--tertiary-container); color: var(--on-tertiary-container); }
 .selo-breve { background: var(--primary-container); color: var(--on-primary-container); }
 .selo-beta { background: #ffe9a8; color: #6b4a00; }
+.tag-ativo { margin-left: 6px; padding: 1px 8px; border-radius: 999px; background: var(--tertiary-container); color: var(--on-tertiary-container); font-family: var(--font-body); font-size: 9.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; flex: none; }
 .tag-beta { margin-left: 6px; padding: 1px 7px; border-radius: 999px; background: #ffe9a8; color: #6b4a00; font-size: 9.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; flex: none; }
 
 /* ---------- painel da direita ---------- */
@@ -401,11 +402,6 @@ button { font: inherit; color: inherit; }
 .texto-vermelho { color: #b3261b; }
 .texto-azul { color: #1558b8; }
 .texto-cinza { color: var(--outline); }
-.sefaz-acoes { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; margin-top: 8px; }
-.btn-consultar { appearance: none; border: 1px solid var(--primary); background: transparent; color: var(--primary); font-family: var(--font-body); font-size: 12.5px; font-weight: 700; padding: 6px 14px; border-radius: 999px; cursor: pointer; transition: background-color 0.15s ease, color 0.15s ease; }
-.btn-consultar:hover:not(:disabled) { background: var(--primary); color: var(--on-primary); }
-.btn-consultar:disabled { opacity: 0.55; cursor: progress; }
-.sefaz-fonte { font-size: 11.5px; color: var(--on-surface-variant); flex: 1 1 140px; }
 .sefaz-rodape { margin: 8px 0 0; font-size: 11.5px; line-height: 1.5; color: var(--on-surface-variant); }
 .sefaz-rodape a { color: var(--primary); }
 

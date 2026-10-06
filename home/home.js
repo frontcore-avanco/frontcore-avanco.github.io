@@ -9,7 +9,6 @@ import { MANUALS } from "../assets/js/manuals-data.js";
 import { searchManuals } from "../assets/js/help-search.js";
 import { USUARIOS } from "../assets/js/usuarios.js";
 import { iniciarPaineis } from "./paineis.js";
-import { PROXY_SEFAZ } from "./config-sefaz.js";
 
 const $ = (id) => document.getElementById(id);
 
@@ -273,13 +272,11 @@ function painelSefaz() {
     `<span class="sefaz-estado">Verificando...</span></li>`;
   return painel({
     id: "sefaz",
-    titulo: 'SEFAZ MG <span class="tag-beta">Beta · homologação</span>',
+    titulo: 'SEFAZ MG <span class="tag-ativo">Ativo</span>',
     extra: `<span class="sefaz-hora" id="sefaz-hora"></span>`,
     aberto: true,
     corpo:
       `<ul class="lista-sefaz">${linha("nfce", "NFC-e")}${linha("nfe", "NF-e")}</ul>` +
-      `<div class="sefaz-acoes"><button type="button" class="btn-consultar" id="btn-sefaz">Consultar agora</button>` +
-      `<span class="sefaz-fonte" id="sefaz-fonte"></span></div>` +
       `<p class="sefaz-rodape">Monitor independente, não é o comunicado oficial da SEFAZ. ` +
       `Conferir: <a href="https://monitor.zorte.com.br/nfce" target="_blank" rel="noopener noreferrer">Zorte</a> · ` +
       `<a href="https://monitor.tecnospeed.com.br/?filter-doc=nfce&filter-uf=mg" target="_blank" rel="noopener noreferrer">Tecnospeed</a></p>`,
@@ -295,75 +292,38 @@ function definirSefaz(id, texto, tom) {
   estado.className = `sefaz-estado texto-${tom}`;
 }
 
-const hhmmss = (d) => d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-
 async function lerJson(url, limiteMs) {
   const resp = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(limiteMs) });
   if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
   return resp.json();
 }
 
-/** Consulta ao vivo (se o mini-serviço estiver configurado) e, se não der,
- * lê o último dado do robô. Tudo falhou = sem conexão (cinza). */
-async function buscarSefaz() {
-  if (PROXY_SEFAZ) {
-    try {
-      return { dados: await lerJson(PROXY_SEFAZ, 15000), aoVivo: true };
-    } catch {
-      /* cai pro arquivo do robô */
-    }
-  }
+async function carregarSefaz() {
+  let dados;
   try {
-    return { dados: await lerJson(URL_SEFAZ, 10000), aoVivo: false };
+    dados = await lerJson(URL_SEFAZ, 10000);
   } catch {
-    return { dados: null, aoVivo: false, semConexao: true };
-  }
-}
-
-let consultandoSefaz = false;
-
-async function carregarSefaz(manual = false) {
-  if (consultandoSefaz) return;
-  consultandoSefaz = true;
-  const botao = $("btn-sefaz");
-  if (manual) {
-    botao.disabled = true;
-    botao.textContent = "Consultando...";
-    for (const id of ["nfce", "nfe"]) definirSefaz(id, "Consultando...", "cinza");
-  }
-  try {
-    const { dados, aoVivo, semConexao } = await buscarSefaz();
-
-    if (semConexao) {
-      for (const id of ["nfce", "nfe"]) definirSefaz(id, "Sem conexão", "cinza");
-      $("sefaz-hora").textContent = "";
-      $("sefaz-fonte").textContent = `Não foi possível consultar (${hhmmss(new Date())}).`;
-      return;
-    }
-
-    const leitura = new Date(dados.atualizadoEm);
-    const idadeMin = (Date.now() - leitura.getTime()) / 60000;
-    if (!aoVivo && !(idadeMin <= LIMITE_DESATUALIZADO_MIN)) {
-      for (const id of ["nfce", "nfe"]) definirSefaz(id, "Dados desatualizados", "cinza");
-      $("sefaz-hora").textContent = `última leitura ${leitura.toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })}`;
-      $("sefaz-fonte").textContent = "O robô ainda não atualizou. Tente de novo em alguns minutos.";
-      return;
-    }
-
-    for (const id of ["nfce", "nfe"]) {
-      const d = dados.docs?.[id];
-      if (!d) definirSefaz(id, "Sem dados", "cinza");
-      else definirSefaz(id, d.rotulo, TOM_SEFAZ[d.estado] || "cinza");
-    }
+    // não deu pra ler o arquivo do robô: sem conexão (cinza), nunca verde
+    for (const id of ["nfce", "nfe"]) definirSefaz(id, "Sem conexão", "cinza");
     $("sefaz-hora").textContent = "";
-    $("sefaz-fonte").textContent = aoVivo
-      ? `Consulta ao vivo às ${hhmmss(leitura)}.`
-      : `Leitura do robô às ${hhmmss(leitura)} (a cada ~10 min).`;
-  } finally {
-    consultandoSefaz = false;
-    botao.disabled = false;
-    botao.textContent = "Consultar agora";
+    return;
   }
+
+  const leitura = new Date(dados.atualizadoEm);
+  const idadeMin = (Date.now() - leitura.getTime()) / 60000;
+  if (!(idadeMin <= LIMITE_DESATUALIZADO_MIN)) {
+    for (const id of ["nfce", "nfe"]) definirSefaz(id, "Dados desatualizados", "cinza");
+    $("sefaz-hora").textContent = `última leitura ${leitura.toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })}`;
+    return;
+  }
+
+  for (const id of ["nfce", "nfe"]) {
+    const d = dados.docs?.[id];
+    if (!d) definirSefaz(id, "Sem dados", "cinza");
+    else definirSefaz(id, d.rotulo, TOM_SEFAZ[d.estado] || "cinza");
+  }
+  const p = (n) => String(n).padStart(2, "0");
+  $("sefaz-hora").textContent = `atualizado às ${p(leitura.getHours())}:${p(leitura.getMinutes())}`;
 }
 
 // ---- busca global (Ctrl+K) ----------------------------------------------------------------
@@ -538,7 +498,6 @@ setInterval(atualizarRelogio, 20000);
 verificarStatus();
 carregarSefaz();
 setInterval(carregarSefaz, 5 * 60 * 1000);
-$("btn-sefaz").addEventListener("click", () => carregarSefaz(true));
 
 document.addEventListener("click", (e) => {
   if (!e.target.closest(".menu-sino, .menu-usuario")) fecharPopovers();
