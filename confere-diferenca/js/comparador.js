@@ -15,9 +15,11 @@
 //
 // Integral e Saída têm layouts (e nomes de arquivo) diferentes entre si,
 // e cada um cruza com o Tramitador por uma chave diferente:
-// - Integral não tem a Chave de Acesso, só o número puro da NFC-e — e
-//   nessa loja esse número já é único sozinho, então cruza direto com o
-//   NNF do Tramitador.
+// - Integral não tem a Chave de Acesso, só o número puro da NFC-e e o
+//   caixa (CX). Em lojas em que cada caixa tem a sua numeração, o mesmo
+//   número existe em vários caixas, então cruza por caixa + número com
+//   série + NNF do Tramitador (alinharIntegral). Se o caixa não bater com
+//   a série, cai pro cruzamento só pelo número.
 // - Saída tem a Chave de Acesso completa (Chave_Nota) — e o número da
 //   nota sozinho SE REPETE entre caixas diferentes (cada um com sua
 //   própria numeração), então só a chave completa é um identificador
@@ -85,7 +87,10 @@ export function parseIntegral(rows) {
     if (!row || !row[colNfce]) continue;
     const nfce = normalizarChave(row[colNfce]);
     if (!nfce) continue;
-    porNfce.set(nfce, {
+    // Em algumas lojas cada caixa tem a sua própria numeração (o mesmo
+    // número de NFC-e existe em vários caixas), então a chave é caixa + número.
+    const cxNorm = colCx >= 0 ? normalizarChave(row[colCx]) : "";
+    porNfce.set(`${cxNorm}|${nfce}`, {
       nfce,
       docum: colDocum >= 0 ? row[colDocum] : null,
       lj: colLj >= 0 ? row[colLj] : null,
@@ -198,6 +203,7 @@ export function parseTramitador(rows, rotulo = "Tramitador") {
   }
 
   const porNnf = new Map();
+  const porSerieNnf = new Map();
   const porChave = new Map();
   for (let i = headerIdx + 1; i < rows.length; i++) {
     const row = rows[i];
@@ -225,9 +231,35 @@ export function parseTramitador(rows, rotulo = "Tramitador") {
     if (!existente || (!SITUACOES_VALIDAS.has(existente.situacao) && SITUACOES_VALIDAS.has(situacao))) {
       porNnf.set(nnf, doc);
     }
+    // mesma resolução de reprocessamento, mas dentro de cada série (caixa)
+    const chaveSerie = `${normalizarChave(doc.serie)}|${nnf}`;
+    const existenteSerie = porSerieNnf.get(chaveSerie);
+    if (!existenteSerie || (!SITUACOES_VALIDAS.has(existenteSerie.situacao) && SITUACOES_VALIDAS.has(situacao))) {
+      porSerieNnf.set(chaveSerie, doc);
+    }
     if (chave) porChave.set(chave, doc);
   }
-  return { porNnf, porChave };
+  return { porNnf, porSerieNnf, porChave };
+}
+
+/** Decide como cruzar o Integral com o Tramitador. Se o caixa do Integral
+ * bate com a série do Tramitador (o normal), cruza por caixa + número —
+ * necessário nas lojas em que o mesmo número de NFC-e existe em vários
+ * caixas. Se o caixa não corresponde à série, cai pro cruzamento só pelo
+ * número (comportamento anterior). Devolve os dois índices já na mesma chave. */
+export function alinharIntegral(integral, tramitador) {
+  let casaSerie = 0;
+  let casaNnf = 0;
+  for (const [chave, venda] of integral) {
+    if (tramitador.porSerieNnf.has(chave)) casaSerie++;
+    if (tramitador.porNnf.has(venda.nfce)) casaNnf++;
+  }
+  if (casaSerie >= casaNnf) {
+    return { modo: "serie", integral, tramitador: tramitador.porSerieNnf };
+  }
+  const porNfce = new Map();
+  for (const venda of integral.values()) porNfce.set(venda.nfce, venda);
+  return { modo: "nnf", integral: porNfce, tramitador: tramitador.porNnf };
 }
 
 const TOLERANCIA_VALOR = 0.01;
@@ -238,9 +270,10 @@ export function compararIntegralTramitador(integral, tramitador) {
   const diffs = [];
   const vistos = new Set();
 
-  for (const [nfce, venda] of integral) {
-    vistos.add(nfce);
-    const doc = tramitador.get(nfce);
+  for (const [chave, venda] of integral) {
+    const nfce = venda.nfce;
+    vistos.add(chave);
+    const doc = tramitador.get(chave);
 
     if (!doc) {
       diffs.push({
@@ -293,11 +326,11 @@ export function compararIntegralTramitador(integral, tramitador) {
   // Notas autorizadas no Tramitador sem nenhum registro no Integral.
   // (Cancelada/rejeitada/inutilizada sem venda no Integral é esperado —
   // não é sinalizado como diferença.)
-  for (const [nnf, doc] of tramitador) {
-    if (vistos.has(nnf)) continue;
+  for (const [chave, doc] of tramitador) {
+    if (vistos.has(chave)) continue;
     if (!SITUACOES_VALIDAS.has(doc.situacao)) continue;
     diffs.push({
-      nfce: nnf,
+      nfce: doc.nnf,
       tipo: "Não encontrado no Integral",
       detalhe: "Está autorizada no Tramitador, mas essa NFC-e não aparece no Integral.",
       valorOrigem: null,

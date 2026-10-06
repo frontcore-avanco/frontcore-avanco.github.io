@@ -14,6 +14,7 @@ import {
   compararIntegralTramitador,
   compararSaidaTramitador,
   compararNovoAvancoTramitador,
+  alinharIntegral,
   detectarLayout,
 } from "./comparador.js";
 import { saveCsv } from "./save-csv.js";
@@ -122,8 +123,9 @@ btnComparar.addEventListener("click", async () => {
       totalTramitador = tramitador.porChave.size;
     } else if (origemTipo === "integral") {
       origem = parseIntegral(linhasOrigem);
-      diffs = compararIntegralTramitador(origem, tramitador.porNnf);
-      totalTramitador = tramitador.porNnf.size;
+      const alinhado = alinharIntegral(origem, tramitador);
+      diffs = compararIntegralTramitador(alinhado.integral, alinhado.tramitador);
+      totalTramitador = alinhado.tramitador.size;
     } else {
       origem = parseSaida(linhasOrigem);
       diffs = compararSaidaTramitador(origem, tramitador.porChave);
