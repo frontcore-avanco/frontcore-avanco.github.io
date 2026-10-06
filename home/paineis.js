@@ -53,7 +53,7 @@ function htmlKr(l) {
 }
 
 function desenharOkr(res) {
-  const usarInicial = res.estado === "nao-configurado";
+  const usarInicial = res.estado === "nao-configurado" || res.estado === "erro";
   const linhas = usarInicial ? OKR_INICIAL : res.linhas;
   const grupos = new Map();
   for (const l of linhas) {
