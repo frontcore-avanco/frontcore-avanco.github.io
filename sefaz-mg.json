@@ -1,0 +1,26 @@
+{
+  "uf": "MG",
+  "atualizadoEm": "2026-10-11T01:18:03.499Z",
+  "fonte": {
+    "nome": "Zorte Monitor",
+    "url": "https://monitor.zorte.com.br"
+  },
+  "docs": {
+    "nfce": {
+      "nome": "NFC-e",
+      "estado": "normal",
+      "rotulo": "Normal",
+      "contingencia": false,
+      "tempoResposta": 0,
+      "erro": null
+    },
+    "nfe": {
+      "nome": "NF-e",
+      "estado": "normal",
+      "rotulo": "Normal",
+      "contingencia": false,
+      "tempoResposta": 0,
+      "erro": null
+    }
+  }
+}
