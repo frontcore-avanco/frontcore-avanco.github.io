@@ -1,0 +1,26 @@
+{
+  "uf": "MG",
+  "atualizadoEm": "2026-11-28T12:16:39.514Z",
+  "fonte": {
+    "nome": "Zorte Monitor",
+    "url": "https://monitor.zorte.com.br"
+  },
+  "docs": {
+    "nfce": {
+      "nome": "NFC-e",
+      "estado": "indisponivel",
+      "rotulo": "Indisponível",
+      "contingencia": false,
+      "tempoResposta": null,
+      "erro": "HTTP 500"
+    },
+    "nfe": {
+      "nome": "NF-e",
+      "estado": "indisponivel",
+      "rotulo": "Indisponível",
+      "contingencia": false,
+      "tempoResposta": null,
+      "erro": "HTTP 500"
+    }
+  }
+}
